@@ -664,7 +664,12 @@ function buildAnswer(question, hitsList) {
     if (h && h.score >= 0.05) {
       // 본문 전체(최대 6문장)를 인용. 코퍼스 문서가 짧고, 경고/예외/부정
       // 맥락이 본문 후반에 위치하기 때문에 앞부분만 자르면 핵심이 누락된다.
-      const sents = h.doc.text.split(/(?<=[.!?。])\s+/).slice(0, 6).join(" ");
+      // 문장 분리는 lookbehind 없이 처리(구형 Safari 호환).
+      const sents = h.doc.text
+        .replace(/([.!?。])\s+/g, "$1\n")
+        .split("\n")
+        .slice(0, 6)
+        .join(" ");
       parts.push(`  → [${h.doc.title}] ${sents}`);
     } else {
       parts.push("  → 관련 근거가 약합니다. (점수 < 0.05)");
@@ -719,8 +724,9 @@ function validate(question, answerText, citedDocs) {
   }
 
   // (3) 기간 혼동 오류: 답변에 등장한 연수와 인용 조항의 nums가 불일치
-  // 룩비하인드/룩어헤드로 "1989년" 같은 연도(달력) 매치를 제외
-  const yrMatches = [...answerText.matchAll(/(?<!\d)(\d{1,3})\s*년(?!\d)/g)]
+  // \d+ 가 숫자 전체를 욕심껏 잡으므로 "1989년"은 1989로 추출되고,
+  // < 100 필터에서 자동 제외된다. lookbehind 미사용(구형 Safari 호환).
+  const yrMatches = [...answerText.matchAll(/(\d+)\s*년/g)]
     .map(m => parseInt(m[1], 10))
     .filter(n => n > 0 && n < 100); // 보호기간은 통상 100년 미만
   const allowedNums = new Set();
