@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TRIPS RAG v2 — Agentic 검색·검증 시스템</title>
+<style>
+  :root {
+    --bg: #f7f7f7;
+    --panel: #ffffff;
+    --ink: #1a1a1a;
+    --ink-2: #444;
+    --ink-3: #707070;
+    --line: #d9d9d9;
+    --line-2: #ececec;
+    --accent: #1a1a1a;
+    --warn-bg: #fff4f0;
+    --warn-line: #c0392b;
+    --warn-ink: #6e1b10;
+    --ok-bg: #f0f4f0;
+    --ok-line: #4a4a4a;
+    --tag-bg: #2a2a2a;
+    --tag-ink: #f7f7f7;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Malgun Gothic", "맑은 고딕", -apple-system, "Segoe UI",
+      Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.55;
+    font-size: 15px;
+  }
+  .wrap {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 24px 18px 80px;
+  }
+  header.intro {
+    border: 1px solid var(--line);
+    background: var(--panel);
+    padding: 18px 18px 14px;
+    border-radius: 4px;
+  }
+  header.intro h1 {
+    margin: 0 0 4px;
+    font-size: 20px;
+    letter-spacing: -0.2px;
+  }
+  header.intro .sub {
+    color: var(--ink-3);
+    font-size: 13px;
+    margin-bottom: 12px;
+  }
+  .compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 6px;
+  }
+  .compare .col {
+    border: 1px solid var(--line-2);
+    background: #fafafa;
+    padding: 10px 12px;
+    border-radius: 4px;
+    font-size: 13px;
+  }
+  .compare .col b { display: block; margin-bottom: 4px; color: var(--ink); }
+  .compare .col ul { margin: 4px 0 0; padding-left: 16px; color: var(--ink-2); }
+
+  section.ask {
+    margin-top: 18px;
+    border: 1px solid var(--line);
+    background: var(--panel);
+    border-radius: 4px;
+    padding: 16px;
+  }
+  section.ask label {
+    display: block;
+    font-size: 13px;
+    color: var(--ink-3);
+    margin-bottom: 6px;
+  }
+  textarea#q {
+    width: 100%;
+    min-height: 70px;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 10px;
+    font-family: inherit;
+    font-size: 14px;
+    resize: vertical;
+    background: #fff;
+    color: var(--ink);
+  }
+  textarea#q:focus { outline: 1px solid var(--ink); }
+  .btnrow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+    align-items: center;
+  }
+  button.primary {
+    background: var(--ink);
+    color: #fff;
+    border: 1px solid var(--ink);
+    padding: 8px 16px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 14px;
+  }
+  button.primary:hover { background: #000; }
+  button.ghost {
+    background: #fff;
+    color: var(--ink-2);
+    border: 1px solid var(--line);
+    padding: 6px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 12px;
+  }
+  button.ghost:hover { border-color: var(--ink); color: var(--ink); }
+
+  .examples {
+    margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .examples .ex {
+    border: 1px dashed var(--line);
+    background: #fafafa;
+    color: var(--ink-2);
+    font-size: 12px;
+    padding: 6px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+  .examples .ex:hover { border-style: solid; border-color: var(--ink); color: var(--ink); }
+
+  section.result {
+    margin-top: 18px;
+    display: none;
+  }
+  section.result.show { display: block; }
+
+  .panel {
+    border: 1px solid var(--line);
+    background: var(--panel);
+    border-radius: 4px;
+    padding: 16px;
+    margin-bottom: 14px;
+  }
+  .panel h2 {
+    margin: 0 0 10px;
+    font-size: 15px;
+    letter-spacing: -0.1px;
+    border-bottom: 1px solid var(--line-2);
+    padding-bottom: 6px;
+  }
+  .answer {
+    white-space: pre-wrap;
+    font-size: 14.5px;
+    color: var(--ink);
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 3px;
+    font-size: 12.5px;
+    border: 1px solid var(--line);
+    margin-right: 6px;
+  }
+  .badge.ok {
+    background: var(--ok-bg);
+    border-color: var(--ok-line);
+    color: var(--ink);
+  }
+  .badge.warn {
+    background: var(--warn-bg);
+    border-color: var(--warn-line);
+    color: var(--warn-ink);
+  }
+  .warnlist {
+    margin: 10px 0 0;
+    padding: 10px 12px;
+    background: var(--warn-bg);
+    border: 1px solid var(--warn-line);
+    border-radius: 3px;
+    font-size: 13px;
+    color: var(--warn-ink);
+  }
+  .warnlist ul { margin: 4px 0 0; padding-left: 18px; }
+
+  .src {
+    border: 1px solid var(--line-2);
+    border-radius: 3px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    background: #fcfcfc;
+  }
+  .src .head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 4px;
+  }
+  .src .title {
+    font-weight: bold;
+    font-size: 14px;
+    color: var(--ink);
+  }
+  .src .meta {
+    font-size: 12px;
+    color: var(--ink-3);
+  }
+  .src .body {
+    font-size: 13px;
+    color: var(--ink-2);
+    white-space: pre-wrap;
+  }
+  .tag {
+    display: inline-block;
+    background: var(--tag-bg);
+    color: var(--tag-ink);
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 2px;
+    margin-left: 4px;
+  }
+  .score {
+    font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+    font-size: 12px;
+    color: var(--ink-2);
+    background: #efefef;
+    padding: 2px 6px;
+    border-radius: 2px;
+  }
+
+  details.decomp {
+    border: 1px solid var(--line-2);
+    background: #fafafa;
+    border-radius: 3px;
+    padding: 8px 10px;
+  }
+  details.decomp > summary {
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--ink-2);
+    user-select: none;
+  }
+  details.decomp[open] > summary { color: var(--ink); }
+  details.decomp .sub {
+    margin-top: 8px;
+    font-size: 13px;
+    color: var(--ink-2);
+  }
+  details.decomp .sub .qline {
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px dashed var(--line);
+  }
+  details.decomp ol { margin: 6px 0 0 18px; padding: 0; }
+
+  footer.note {
+    margin-top: 22px;
+    font-size: 12px;
+    color: var(--ink-3);
+    border-top: 1px solid var(--line);
+    padding-top: 12px;
+  }
+  footer.note b { color: var(--ink-2); }
+
+  @media (max-width: 600px) {
+    .wrap { padding: 14px 12px 60px; }
+    .compare { grid-template-columns: 1fr; }
+    header.intro h1 { font-size: 18px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="intro">
+    <h1>TRIPS RAG v2 — Agentic 검색·검증 시스템</h1>
+    <div class="sub">
+      WTO TRIPS 협정 질의응답 · 동아리 활동 2차 버전
+      (1차 TF-IDF + 룰 기반 → 2차 Agentic + 자체검증)
+    </div>
+    <div class="compare">
+      <div class="col">
+        <b>1차 (Emergent) 한계</b>
+        <ul>
+          <li>단일 검색만 수행, 복합 질문 분해 불가</li>
+          <li>도메인 혼동 오류 미검출</li>
+          <li>검색 점수 비공개로 신뢰도 판단 불가</li>
+        </ul>
+      </div>
+      <div class="col">
+        <b>2차 개선점</b>
+        <ul>
+          <li>질문 분해 → 다중 검색 → 통합 답변 (Agentic)</li>
+          <li>3유형(개념대체·도메인혼동·기간혼동) 자체 검증</li>
+          <li>Top-3 결과 + TF-IDF 점수 노출</li>
+        </ul>
+      </div>
+    </div>
+  </header>
+
+  <section class="ask">
+    <label for="q">질문 입력</label>
+    <textarea id="q" placeholder="예: TRIPS 제31조(c)와 제35~38조의 보호기간 차이는?"></textarea>
+    <div class="btnrow">
+      <button class="primary" id="run">질의 실행</button>
+      <button class="ghost" id="clear">지우기</button>
+    </div>
+    <div class="examples" id="examples">
+      <div class="ex" data-q="반도체에서 강제실시권은 어떤 경우에 허용되는가?">반도체 강제실시권은 어떤 경우에 허용되는가?</div>
+      <div class="ex" data-q="TRIPS 제27조의 진보성은 creativity나 originality와 같은 의미인가?">제27조 진보성은 creativity와 같은가?</div>
+      <div class="ex" data-q="TRIPS 제31조와 제38조의 보호기간 차이를 비교해줘">제31조와 제38조 비교</div>
+      <div class="ex" data-q="영업비밀의 3요건은 무엇이며 유일성이 포함되는가?">영업비밀 3요건과 유일성</div>
+    </div>
+  </section>
+
+  <section class="result" id="result">
+    <div class="panel">
+      <h2>답변</h2>
+      <div class="answer" id="answer"></div>
+      <div style="margin-top:12px" id="badges"></div>
+      <div id="warnbox"></div>
+    </div>
+
+    <div class="panel">
+      <h2>출처 조항 (Top-3 · TF-IDF 점수)</h2>
+      <div id="sources"></div>
+    </div>
+
+    <div class="panel">
+      <h2>추론 과정</h2>
+      <details class="decomp" id="decomp">
+        <summary>질문 분해 및 다중 검색 로그 (펼치기)</summary>
+        <div class="sub" id="decompBody"></div>
+      </details>
+    </div>
+  </section>
+
+  <footer class="note">
+    <b>시스템 한계 안내.</b>
+    이 시스템은 학생부종합전형 동아리 활동 산출물로,
+    TF-IDF 기반 정적 검색과 룰 기반 답변 템플릿으로만 구성됩니다.
+    LLM 추론 능력은 없으며, 4개 조항(제27·31·35–38·39)에 한정된
+    내장 데이터에서만 응답합니다. 자체 검증 레이어가 표시하는
+    "신뢰도 ★★★"은 3개 휴리스틱 규칙 통과를 의미할 뿐
+    법적 정확성을 보증하지 않습니다. 실제 법률 판단에는
+    원문 및 전문가 자문이 필요합니다.
+  </footer>
+</div>
+
+<script>
+/* ============================================================
+ * TRIPS RAG v2 — single-file client-side RAG
+ * ============================================================ */
+
+/* ---------- 1. 조항 데이터 ---------- */
+const CORPUS = [
+  {
+    id: "art27",
+    title: "TRIPS 제27조 — 특허의 대상 (진보성)",
+    domain: "일반",
+    text:
+      "TRIPS 제27조 1항: 특허는 모든 기술 분야의 발명에 대해 부여될 수 있으며, " +
+      "신규성(novelty), 진보성(inventive step), 산업상 이용가능성(industrial applicability)을 " +
+      "충족해야 한다. 협정 각주 5는 'inventive step'이 'non-obvious'와, " +
+      "'industrial applicability'가 'useful'과 동일한 의미로 사용될 수 있음을 명시한다. " +
+      "주의: 'creativity(창작성)'와 'originality(독창성)'는 저작권법 영역의 개념이며, " +
+      "TRIPS 특허 요건에서 사용되는 법적 용어가 아니다. 두 개념을 진보성과 동일시하는 것은 " +
+      "개념 대체 오류에 해당한다.",
+    nums: [],
+    keywords: ["특허", "진보성", "신규성", "산업상이용가능성", "inventive", "step",
+               "non-obvious", "novelty", "각주5", "footnote", "27조"],
+  },
+  {
+    id: "art31c",
+    title: "TRIPS 제31조(c) — 반도체 기술 강제실시권의 제한",
+    domain: "반도체",
+    text:
+      "TRIPS 제31조(c): 반도체(semi-conductor) 기술에 대한 강제실시권(compulsory licensing)은 " +
+      "오직 (i) 공공의 비상업적 사용(public non-commercial use) 또는 " +
+      "(ii) 사법·행정 절차에 따라 반경쟁적(anti-competitive) 관행으로 " +
+      "판정된 행위의 시정 목적에 한해서만 허용된다. " +
+      "도하 선언 및 제31조의2가 인정하는 의약품 공공보건(public health) 예외는 " +
+      "반도체 분야에는 적용되지 않는다. 따라서 일반 의약품 강제실시 논리를 " +
+      "반도체에 그대로 적용하는 것은 도메인 혼동 오류이다.",
+    nums: [],
+    keywords: ["반도체", "강제실시권", "compulsory", "licensing", "비상업적",
+               "반경쟁", "anti-competitive", "31조", "31(c)", "공공의비상업적사용"],
+  },
+  {
+    id: "art35_38",
+    title: "TRIPS 제35조~제38조 — 집적회로 배치설계 보호",
+    domain: "반도체",
+    text:
+      "TRIPS 제35조~제38조: 집적회로(integrated circuit)의 배치설계(layout-design, topography)는 " +
+      "1989년 워싱턴 조약을 기반으로 보호된다. 제38조 보호기간은 " +
+      "최초의 상업적 이용일(first commercial exploitation)로부터 최소 10년이며, " +
+      "출원 등록제 국가는 출원일로부터 10년으로 설정할 수 있다. " +
+      "이는 특허(20년, 제33조)와 명백히 다른 별개의 보호 체계이다. " +
+      "보호기간 숫자를 혼동하면 기간 혼동 오류가 발생한다.",
+    nums: [10, 20],
+    keywords: ["배치설계", "집적회로", "layout", "topography", "10년",
+               "최초상업적이용일", "38조", "35조", "36조", "37조", "보호기간"],
+  },
+  {
+    id: "art39",
+    title: "TRIPS 제39조 — 미공개 정보(영업비밀) 보호",
+    domain: "일반",
+    text:
+      "TRIPS 제39조 2항: 영업비밀(undisclosed information, trade secret)은 다음 3요건을 " +
+      "모두 갖춰야 보호된다. " +
+      "(가) 비밀성(secrecy): 일반적으로 알려져 있지 않거나 쉽게 접근할 수 없을 것. " +
+      "(나) 상업적 가치(commercial value): 비밀이라는 사실로 인해 상업적 가치를 가질 것. " +
+      "(다) 합리적 비밀 유지 조치(reasonable steps): 권리자가 비밀 유지를 위한 " +
+      "합리적 조치를 취하고 있을 것. " +
+      "주의: '유일성(uniqueness)'은 TRIPS 제39조의 요건이 아니며, " +
+      "이를 요건으로 보는 것은 개념 대체 오류이다.",
+    nums: [],
+    keywords: ["영업비밀", "미공개정보", "trade", "secret", "비밀성", "상업적가치",
+               "합리적조치", "39조", "3요건", "undisclosed"],
+  },
+];
+
+/* ---------- 2. 동의어 사전 ---------- */
+const SYNONYMS = [
+  ["강제실시권", "compulsory licensing", "compulsory", "licensing", "강제실시"],
+  ["진보성", "inventive step", "inventive", "non-obvious", "nonobvious"],
+  ["반도체", "semi-conductor", "semiconductor", "집적회로", "ic"],
+  ["배치설계", "layout-design", "layout", "topography", "토포그래피"],
+  ["영업비밀", "trade secret", "undisclosed information", "미공개정보"],
+  ["보호기간", "protection term", "duration", "term"],
+  ["공공보건", "public health", "도하선언", "doha"],
+  ["반경쟁", "anti-competitive", "anticompetitive", "반경쟁적"],
+  ["특허", "patent", "특허권"],
+  ["발명", "invention", "신규성", "novelty"],
+];
+
+/* ---------- 3. 한국어/영문 토크나이저 ---------- */
+// 한국어 조사·어미 단순 제거 + 공백/구두점 분리, 영문 lowercase
+const KO_PARTICLES = [
+  "은", "는", "이", "가", "을", "를", "의", "에", "에서", "으로", "로",
+  "와", "과", "도", "만", "이나", "나", "이라", "라", "이며", "며",
+  "하다", "하며", "하고", "한다", "되며", "된다", "되는", "되어",
+  "같은", "같이", "관련", "대한", "대해", "위한", "포함", "있는", "없는",
+  "그리고", "그러나", "또한", "혹은", "또는",
+];
+
+function tokenize(str) {
+  if (!str) return [];
+  // 영문/숫자/한글 외 구두점은 공백으로 치환
+  let s = str.toLowerCase()
+    .replace(/[　-〿＀-￯!"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~]/g, " ");
+  // 단순 분리
+  let raw = s.split(/\s+/).filter(Boolean);
+  let out = [];
+  for (let tok of raw) {
+    if (/^[a-z0-9]+$/.test(tok)) {
+      // 영문/숫자 토큰은 그대로
+      out.push(tok);
+      continue;
+    }
+    // 한글 토큰: 조사/어미 단순 절단
+    let t = tok;
+    // 가장 긴 조사부터 매치
+    const sorted = KO_PARTICLES.slice().sort((a, b) => b.length - a.length);
+    for (let p of sorted) {
+      if (t.length > p.length + 1 && t.endsWith(p)) {
+        t = t.slice(0, t.length - p.length);
+        break;
+      }
+    }
+    if (t.length >= 1) out.push(t);
+  }
+  // 동의어 확장
+  let expanded = [];
+  for (let t of out) {
+    expanded.push(t);
+    for (let group of SYNONYMS) {
+      const norm = group.map(x => x.toLowerCase().replace(/\s+/g, ""));
+      const tNorm = t.replace(/\s+/g, "");
+      if (norm.includes(tNorm) || group.map(x => x.toLowerCase()).includes(t)) {
+        for (let g of group) {
+          const parts = g.toLowerCase().split(/\s+/);
+          for (let p of parts) if (p && !expanded.includes(p)) expanded.push(p);
+        }
+      }
+    }
+  }
+  return expanded;
+}
+
+/* ---------- 4. TF-IDF 인덱스 ---------- */
+const DOC_TOKENS = CORPUS.map(d => tokenize(d.title + " " + d.text + " " + d.keywords.join(" ")));
+const N = CORPUS.length;
+const DF = {};
+for (let toks of DOC_TOKENS) {
+  const seen = new Set();
+  for (let t of toks) {
+    if (!seen.has(t)) { DF[t] = (DF[t] || 0) + 1; seen.add(t); }
+  }
+}
+function idf(term) {
+  const df = DF[term] || 0;
+  return Math.log(1 + (N - df + 0.5) / (df + 0.5));
+}
+const DOC_VEC = DOC_TOKENS.map(toks => {
+  const tf = {};
+  for (let t of toks) tf[t] = (tf[t] || 0) + 1;
+  const len = toks.length || 1;
+  const v = {};
+  for (let t in tf) v[t] = (tf[t] / len) * idf(t);
+  return v;
+});
+const DOC_NORM = DOC_VEC.map(v => {
+  let s = 0;
+  for (let k in v) s += v[k] * v[k];
+  return Math.sqrt(s) || 1;
+});
+
+/* ---------- 5. 도메인 추정 ---------- */
+function inferDomain(qTokens) {
+  const text = qTokens.join(" ");
+  if (/반도체|semiconductor|semi-conductor|배치설계|layout|integrated|circuit|topography|집적회로/.test(text))
+    return "반도체";
+  if (/의약|약|public health|공공보건|도하|doha|pharma/.test(text))
+    return "의약품";
+  if (/디지털|digital|software|소프트웨어/.test(text))
+    return "디지털";
+  return "일반";
+}
+
+/* ---------- 6. 검색 ---------- */
+function search(query, topK = 3) {
+  const qToks = tokenize(query);
+  if (qToks.length === 0) return [];
+  const qDomain = inferDomain(qToks);
+  const tf = {};
+  for (let t of qToks) tf[t] = (tf[t] || 0) + 1;
+  const len = qToks.length;
+  const qv = {};
+  for (let t in tf) qv[t] = (tf[t] / len) * idf(t);
+  let qn = 0;
+  for (let k in qv) qn += qv[k] * qv[k];
+  qn = Math.sqrt(qn) || 1;
+
+  const scored = CORPUS.map((doc, i) => {
+    let dot = 0;
+    for (let t in qv) {
+      if (DOC_VEC[i][t]) dot += qv[t] * DOC_VEC[i][t];
+    }
+    let cos = dot / (qn * DOC_NORM[i]);
+    // 도메인 일치 가중치
+    let boost = 1.0;
+    if (qDomain !== "일반" && doc.domain === qDomain) boost = 1.35;
+    if (qDomain === "의약품" && <doc.id> === "art31c") boost = 1.15;
+    const score = cos * boost;
+    return { doc, score, raw: cos, boost, qDomain };
+  });
+  scored.sort((a, b) => b.score - a.score);
+  return scored.slice(0, topK);
+}
+
+/* ---------- 7. 질문 분해 (Agentic) ---------- */
+function decompose(question) {
+  // 조항 번호 검출
+  const articleMatches = [...question.matchAll(/제?\s*(\d{1,3})\s*조(?:\s*\(([a-z])\))?/gi)];
+  const articles = articleMatches.map(m => `제${m[1]}조${m[2] ? "(" + m[2] + ")" : ""}`);
+  const uniqueArticles = [...new Set(articles)];
+
+  const compareKeyword = /비교|차이|다른점|다른 점|대비|와\s*제|과\s*제|vs|versus/.test(question);
+  const multiArticle = uniqueArticles.length >= 2;
+
+  if (multiArticle) {
+    // 조항 번호를 제거한 나머지를 '공통 맥락'으로 추출해 각 하위 질문에 결합.
+    // 맥락 없이 조항 번호만 검색하면 TF-IDF 점수가 거의 0으로 떨어진다.
+    const context = question
+      .replace(/trips/gi, " ")
+      .replace(/제?\s*\d{1,3}\s*조(?:\s*\([a-z]\))?/gi, " ")
+      .replace(/비교|차이|다른점|다른 점|대비|vs|versus|해줘|알려줘|설명|무엇|뭐|인가|한가/gi, " ")
+      .replace(/[?？!.,~·]/g, " ")
+      .split(/\s+/)
+      .map(w => {
+        let t = w;
+        for (let p of KO_PARTICLES.slice().sort((a, b) => b.length - a.length)) {
+          if (t.length > p.length && t.endsWith(p)) { t = t.slice(0, -p.length); break; }
+        }
+        return t;
+      })
+      .filter(w => w.length >= 2)
+      .join(" ")
+      .trim();
+    const subs = uniqueArticles.map(a =>
+      context ? `${a} ${context}` : `${a}의 핵심 내용은 무엇인가?`);
+    return {
+      decomposed: true,
+      reason: context
+        ? `조항 번호 다중 + 공통 맥락("${context}") 결합`
+        : "조항 번호 다중",
+      subs,
+    };
+  }
+  if (compareKeyword) {
+    // "A와 B 비교" 형태에서 A/B 추출 시도
+    const parts = question
+      .replace(/[?？!.]/g, "")
+      .split(/와|과|vs|versus|및/)
+      .map(s => s.trim())
+      .filter(s => s.length >= 2);
+    if (parts.length >= 2) {
+      const subs = parts.slice(0, 3).map(p => `${p}에 대해 설명`);
+      return { decomposed: true, reason: "비교 키워드 검출", subs };
+    }
+  }
+  return { decomposed: false, reason: "단일 질문", subs: [question] };
+}
+
+/* ---------- 8. 답변 생성 (룰 기반 템플릿) ---------- */
+function buildAnswer(question, hitsList) {
+  // hitsList = [{subQ, hits:[{doc,score},...]}, ...]
+  const merged = {};
+  for (let block of hitsList) {
+    for (let h of block.hits) {
+      if (!merged[<h.doc.id>] || merged[<h.doc.id>].score < h.score) {
+        merged[<h.doc.id>] = h;
+      }
+    }
+  }
+  const ranked = Object.values(merged).sort((a, b) => b.score - a.score);
+  const top = ranked.slice(0, 3);
+
+  if (top.length === 0 || top[0].score < 0.05) {
+    return {
+      text: "내장 코퍼스(제27·31·35–38·39조)에서 관련 근거를 충분히 찾지 못했습니다. " +
+            "질문을 더 구체적으로 작성하거나 조항 번호를 명시해 주세요.",
+      cited: [],
+    };
+  }
+
+  let parts = [];
+  parts.push("【질의 응답】");
+  if (hitsList.length > 1) {
+    parts.push(`복합 질문으로 판단되어 ${hitsList.length}개 하위 질문으로 분해해 검색했습니다.`);
+  }
+  parts.push("");
+  for (let block of hitsList) {
+    if (hitsList.length > 1) parts.push(`▸ 하위 질문: ${block.subQ}`);
+    const h = block.hits[0];
+    if (h && h.score >= 0.05) {
+      // 본문 전체(최대 6문장)를 인용. 코퍼스 문서가 짧고, 경고/예외/부정
+      // 맥락이 본문 후반에 위치하기 때문에 앞부분만 자르면 핵심이 누락된다.
+      const sents = h.doc.text.split(/(?<=[.!?。])\s+/).slice(0, 6).join(" ");
+      parts.push(`  → [${h.doc.title}] ${sents}`);
+    } else {
+      parts.push("  → 관련 근거가 약합니다. (점수 < 0.05)");
+    }
+    parts.push("");
+  }
+
+  parts.push("【종합】");
+  const titles = top.map(t => t.doc.title.replace(/^TRIPS\s/, "")).join(" / ");
+  parts.push(`근거 조항: ${titles}`);
+
+  return {
+    text: parts.join("\n"),
+    cited: top.map(t => t.doc),
+  };
+}
+
+/* ---------- 9. 검증 레이어 ---------- */
+function validate(question, answerText, citedDocs) {
+  const warnings = [];
+
+  // (1) 개념 대체 오류: creativity/originality가 답변에 등장하면서
+  //     citedDocs 안의 art27의 '주의' 맥락이 아니라 답변 본문에 등장
+  const lowerAns = answerText.toLowerCase();
+  if (/\bcreativity\b/.test(lowerAns) || /\boriginality\b/.test(lowerAns) ||
+      /창작성|독창성/.test(answerText)) {
+    // 답변이 "법적 용어가 아니다"라고 명시하지 않았으면 경고
+    if (!/법적 용어가 아니|아니다|개념 대체/.test(answerText)) {
+      warnings.push("개념 대체 오류 의심: 답변에 'creativity/originality'가 등장합니다. " +
+        "이는 저작권법 용어이며 TRIPS 특허 요건이 아닙니다.");
+    }
+  }
+  // 답변이 영업비밀 관련이고 '유일성/uniqueness'가 등장하면 경고
+  if ((/영업비밀|trade secret|39조/.test(answerText)) &&
+      /유일성|uniqueness/.test(answerText) &&
+      !/요건이 아니|아니다/.test(answerText)) {
+    warnings.push("개념 대체 오류 의심: '유일성/uniqueness'은 제39조 영업비밀 요건이 아닙니다.");
+  }
+
+  // (2) 도메인 혼동 오류: 질문이 반도체인데 답변에 의약품/공공보건이 등장
+  // 단, 답변에 부정 맥락("적용되지 않", "별개", "다른 트랙", "도메인 혼동")이 있으면
+  // 정상적인 비교/구분 설명이므로 경고하지 않음
+  const qDomain = inferDomain(tokenize(question));
+  if (qDomain === "반도체") {
+    if (/공공보건|public health|의약품|pharma|도하|doha/.test(answerText)) {
+      const hasNegation = /적용되지\s*않|별개|다른\s*트랙|다른\s*보호|혼동\s*오류|예외가\s*아니|해당\s*없/.test(answerText);
+      if (!hasNegation) {
+        warnings.push("도메인 혼동 오류 의심: 반도체 관련 질문에 의약품/공공보건 표현이 섞였습니다. " +
+          "TRIPS 제31조(c) 반도체 강제실시는 도하 선언/제31조의2의 의약품 예외와 다른 별개의 트랙입니다.");
+      }
+    }
+  }
+
+  // (3) 기간 혼동 오류: 답변에 등장한 연수와 인용 조항의 nums가 불일치
+  // 룩비하인드/룩어헤드로 "1989년" 같은 연도(달력) 매치를 제외
+  const yrMatches = [...answerText.matchAll(/(?<!\d)(\d{1,3})\s*년(?!\d)/g)]
+    .map(m => parseInt(m[1], 10))
+    .filter(n => n > 0 && n < 100); // 보호기간은 통상 100년 미만
+  const allowedNums = new Set();
+  citedDocs.forEach(d => d.nums.forEach(n => allowedNums.add(n)));
+  for (let y of yrMatches) {
+    if (allowedNums.size > 0 && !allowedNums.has(y)) {
+      warnings.push(`기간 혼동 오류 의심: 답변의 '${y}년'이 인용 조항(허용 숫자: ` +
+        `${[...allowedNums].join(", ")}년)과 일치하지 않습니다.`);
+      break;
+    }
+  }
+
+  return {
+    pass: warnings.length === 0,
+    warnings,
+  };
+}
+
+/* ---------- 10. 메인 파이프라인 ---------- */
+function runPipeline(question) {
+  const dec = decompose(question);
+  const subs = dec.subs;
+  const hitsList = subs.map(sq => ({ subQ: sq, hits: search(sq, 3) }));
+  const ans = buildAnswer(question, hitsList);
+  const ver = validate(question, ans.text, ans.cited);
+  return { dec, hitsList, ans, ver };
+}
+
+/* ---------- 11. UI 렌더 ---------- */
+const $ = id => document.getElementById(id);
+
+function renderResult(question) {
+  const { dec, hitsList, ans, ver } = runPipeline(question);
+  $("answer").textContent = ans.text;
+
+  // 배지
+  const b = $("badges");
+  b.innerHTML = "";
+  if (ver.pass) {
+    const span = document.createElement("span");
+    span.className = "badge ok";
+    span.textContent = "검증 통과 — 신뢰도 ★★★";
+    b.appendChild(span);
+  } else {
+    const span = document.createElement("span");
+    span.className = "badge warn";
+    span.textContent = "검증 경고 — 신뢰도 ★★";
+    b.appendChild(span);
+  }
+  // 도메인 추정 배지
+  const dom = inferDomain(tokenize(question));
+  const dspan = document.createElement("span");
+  dspan.className = "badge";
+  dspan.textContent = "추정 도메인: " + dom;
+  b.appendChild(dspan);
+
+  // 경고 박스
+  const wbox = $("warnbox");
+  wbox.innerHTML = "";
+  if (!ver.pass) {
+    const w = document.createElement("div");
+    w.className = "warnlist";
+    w.innerHTML = "<b>자체 검증 경고</b><ul>" +
+      ver.warnings.map(x => "<li>" + escapeHtml(x) + "</li>").join("") + "</ul>";
+    wbox.appendChild(w);
+  }
+
+  // 출처
+  const s = $("sources");
+  s.innerHTML = "";
+  // 통합 Top-3
+  const merged = {};
+  for (let block of hitsList) {
+    for (let h of block.hits) {
+      if (!merged[<h.doc.id>] || merged[<h.doc.id>].score < h.score) merged[<h.doc.id>] = h;
+    }
+  }
+  const top3 = Object.values(merged).sort((a, b) => b.score - a.score).slice(0, 3);
+  if (top3.length === 0) {
+    s.innerHTML = "<div class='src'><div class='body'>검색 결과 없음.</div></div>";
+  } else {
+    for (let h of top3) {
+      const card = document.createElement("div");
+      card.className = "src";
+      card.innerHTML =
+        `<div class="head">
+           <div class="title">${escapeHtml(h.doc.title)}<span class="tag">${escapeHtml(h.doc.domain)}</span></div>
+           <div class="meta">
+             <span class="score">cos=${h.raw.toFixed(3)}</span>
+             <span class="score">×${h.boost.toFixed(2)}</span>
+             <span class="score">최종=${h.score.toFixed(3)}</span>
+           </div>
+         </div>
+         <div class="body">${escapeHtml(h.doc.text)}</div>`;
+      s.appendChild(card);
+    }
+  }
+
+  // 추론 과정
+  const dbody = $("decompBody");
+  let html = "";
+  html += `<div><b>분해 여부:</b> ${dec.decomposed ? "분해됨" : "분해 없음"} (${escapeHtml(dec.reason)})</div>`;
+  html += `<ol>`;
+  for (let i = 0; i < hitsList.length; i++) {
+    const block = hitsList[i];
+    html += `<li class="qline"><b>하위 질문 ${i + 1}:</b> ${escapeHtml(block.subQ)}<br>`;
+    if (block.hits.length === 0) {
+      html += "검색 결과 없음";
+    } else {
+      html += "<ul>";
+      for (let h of block.hits) {
+        html += `<li>[${escapeHtml(h.doc.title)}] cos=${h.raw.toFixed(3)} × ${h.boost.toFixed(2)} = ${h.score.toFixed(3)} <span class="tag">${escapeHtml(h.doc.domain)}</span></li>`;
+      }
+      html += "</ul>";
+    }
+    html += `</li>`;
+  }
+  html += `</ol>`;
+  dbody.innerHTML = html;
+
+  $("result").classList.add("show");
+  $("result").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  }[c]));
+}
+
+/* ---------- 12. 이벤트 ---------- */
+$("run").addEventListener("click", () => {
+  const q = $("q").value.trim();
+  if (!q) { $("q").focus(); return; }
+  renderResult(q);
+});
+$("clear").addEventListener("click", () => {
+  $("q").value = "";
+  $("result").classList.remove("show");
+  $("q").focus();
+});
+$("q").addEventListener("keydown", e => {
+  if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+    e.preventDefault();
+    $("run").click();
+  }
+});
+document.querySelectorAll(".examples .ex").forEach(el => {
+  el.addEventListener("click", () => {
+    $("q").value = el.dataset.q;
+    $("run").click();
+  });
+});
+</script>
+</body>
+</html>
