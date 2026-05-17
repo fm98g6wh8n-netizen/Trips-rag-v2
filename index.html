@@ -358,7 +358,7 @@
     TF-IDF 기반 정적 검색과 룰 기반 답변 템플릿으로만 구성됩니다.
     LLM 추론 능력은 없으며, 4개 조항(제27·31·35–38·39)에 한정된
     내장 데이터에서만 응답합니다. 자체 검증 레이어가 표시하는
-    "신뢰도 ★★★"은 3개 휴리스틱 규칙 통과를 의미할 뿐
+    “신뢰도 ★★★”은 3개 휴리스틱 규칙 통과를 의미할 뿐
     법적 정확성을 보증하지 않습니다. 실제 법률 판단에는
     원문 및 전문가 자문이 필요합니다.
   </footer>
@@ -372,7 +372,7 @@
 /* ---------- 1. 조항 데이터 ---------- */
 const CORPUS = [
   {
-    id: "art27",
+    docId: "art27",
     title: "TRIPS 제27조 — 특허의 대상 (진보성)",
     domain: "일반",
     text:
@@ -388,7 +388,7 @@ const CORPUS = [
                "non-obvious", "novelty", "각주5", "footnote", "27조"],
   },
   {
-    id: "art31c",
+    docId: "art31c",
     title: "TRIPS 제31조(c) — 반도체 기술 강제실시권의 제한",
     domain: "반도체",
     text:
@@ -404,7 +404,7 @@ const CORPUS = [
                "반경쟁", "anti-competitive", "31조", "31(c)", "공공의비상업적사용"],
   },
   {
-    id: "art35_38",
+    docId: "art35_38",
     title: "TRIPS 제35조~제38조 — 집적회로 배치설계 보호",
     domain: "반도체",
     text:
@@ -419,7 +419,7 @@ const CORPUS = [
                "최초상업적이용일", "38조", "35조", "36조", "37조", "보호기간"],
   },
   {
-    id: "art39",
+    docId: "art39",
     title: "TRIPS 제39조 — 미공개 정보(영업비밀) 보호",
     domain: "일반",
     text:
@@ -568,7 +568,7 @@ function search(query, topK = 3) {
     // 도메인 일치 가중치
     let boost = 1.0;
     if (qDomain !== "일반" && doc.domain === qDomain) boost = 1.35;
-    if (qDomain === "의약품" && <doc.id> === "art31c") boost = 1.15;
+    if (qDomain === "의약품" && doc.docId === "art31c") boost = 1.15;
     const score = cos * boost;
     return { doc, score, raw: cos, boost, qDomain };
   });
@@ -636,8 +636,8 @@ function buildAnswer(question, hitsList) {
   const merged = {};
   for (let block of hitsList) {
     for (let h of block.hits) {
-      if (!merged[<h.doc.id>] || merged[<h.doc.id>].score < h.score) {
-        merged[<h.doc.id>] = h;
+      if (!merged[h.doc.docId] || merged[h.doc.docId].score < h.score) {
+        merged[h.doc.docId] = h;
       }
     }
   }
@@ -801,7 +801,7 @@ function renderResult(question) {
   const merged = {};
   for (let block of hitsList) {
     for (let h of block.hits) {
-      if (!merged[<h.doc.id>] || merged[<h.doc.id>].score < h.score) merged[<h.doc.id>] = h;
+      if (!merged[h.doc.docId] || merged[h.doc.docId].score < h.score) merged[h.doc.docId] = h;
     }
   }
   const top3 = Object.values(merged).sort((a, b) => b.score - a.score).slice(0, 3);
