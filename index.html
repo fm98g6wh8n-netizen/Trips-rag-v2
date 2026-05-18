@@ -3,378 +3,616 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>TRIPS RAG v2 — Agentic 검색·검증 시스템</title>
+<title>TradeGuide v2 — 통상·지식재산 RAG 검색·검증 시스템</title>
 <style>
   :root {
-    --bg: #f7f7f7;
+    --navy: #152844;
+    --navy-d: #0f1d33;
+    --navy-l: #24406b;
+    --cream: #f4f1e8;
     --panel: #ffffff;
-    --ink: #1a1a1a;
-    --ink-2: #444;
-    --ink-3: #707070;
-    --line: #d9d9d9;
-    --line-2: #ececec;
-    --accent: #1a1a1a;
-    --warn-bg: #fff4f0;
-    --warn-line: #c0392b;
-    --warn-ink: #6e1b10;
-    --ok-bg: #f0f4f0;
-    --ok-line: #4a4a4a;
-    --tag-bg: #2a2a2a;
-    --tag-ink: #f7f7f7;
+    --gold: #b58f4a;
+    --ink: #1f1f1f;
+    --ink-2: #4d4d4d;
+    --ink-3: #7c7c7c;
+    --line: #e3dfd2;
+    --line-2: #efece2;
+    --ok: #2f6b3f;
+    --ok-bg: #eef4ee;
+    --warn: #b23b2e;
+    --warn-bg: #fbf0ee;
   }
   * { box-sizing: border-box; }
   html, body {
-    margin: 0;
-    padding: 0;
-    background: var(--bg);
+    margin: 0; padding: 0;
+    background: var(--cream);
     color: var(--ink);
     font-family: "Malgun Gothic", "맑은 고딕", -apple-system, "Segoe UI",
       Roboto, "Helvetica Neue", Arial, sans-serif;
-    line-height: 1.55;
+    line-height: 1.6;
     font-size: 15px;
   }
-  .wrap {
-    max-width: 880px;
-    margin: 0 auto;
-    padding: 24px 18px 80px;
+  .serif {
+    font-family: "Nanum Myeongjo", "Apple SD Gothic Neo", Batang,
+      "Times New Roman", serif;
   }
-  header.intro {
-    border: 1px solid var(--line);
-    background: var(--panel);
-    padding: 18px 18px 14px;
-    border-radius: 4px;
-  }
-  header.intro h1 {
-    margin: 0 0 4px;
-    font-size: 20px;
-    letter-spacing: -0.2px;
-  }
-  header.intro .sub {
-    color: var(--ink-3);
-    font-size: 13px;
-    margin-bottom: 12px;
-  }
-  .compare {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin-top: 6px;
-  }
-  .compare .col {
-    border: 1px solid var(--line-2);
-    background: #fafafa;
-    padding: 10px 12px;
-    border-radius: 4px;
-    font-size: 13px;
-  }
-  .compare .col b { display: block; margin-bottom: 4px; color: var(--ink); }
-  .compare .col ul { margin: 4px 0 0; padding-left: 16px; color: var(--ink-2); }
 
-  section.ask {
-    margin-top: 18px;
-    border: 1px solid var(--line);
+  /* ---- 헤더 ---- */
+  .site-header {
     background: var(--panel);
-    border-radius: 4px;
-    padding: 16px;
-  }
-  section.ask label {
-    display: block;
-    font-size: 13px;
-    color: var(--ink-3);
-    margin-bottom: 6px;
-  }
-  textarea#q {
-    width: 100%;
-    min-height: 70px;
-    border: 1px solid var(--line);
-    border-radius: 3px;
-    padding: 10px;
-    font-family: inherit;
-    font-size: 14px;
-    resize: vertical;
-    background: #fff;
-    color: var(--ink);
-  }
-  textarea#q:focus { outline: 1px solid var(--ink); }
-  .btnrow {
+    border-bottom: 1px solid var(--line);
+    padding: 12px 20px;
     display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 10px;
     align-items: center;
-  }
-  button.primary {
-    background: var(--ink);
-    color: #fff;
-    border: 1px solid var(--ink);
-    padding: 8px 16px;
-    border-radius: 3px;
-    cursor: pointer;
-    font-family: inherit;
-    font-size: 14px;
-  }
-  button.primary:hover { background: #000; }
-  button.ghost {
-    background: #fff;
-    color: var(--ink-2);
-    border: 1px solid var(--line);
-    padding: 6px 10px;
-    border-radius: 3px;
-    cursor: pointer;
-    font-family: inherit;
-    font-size: 12px;
-  }
-  button.ghost:hover { border-color: var(--ink); color: var(--ink); }
-
-  .examples {
-    margin-top: 10px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-  .examples .ex {
-    border: 1px dashed var(--line);
-    background: #fafafa;
-    color: var(--ink-2);
-    font-size: 12px;
-    padding: 6px 10px;
-    border-radius: 3px;
-    cursor: pointer;
-  }
-  .examples .ex:hover { border-style: solid; border-color: var(--ink); color: var(--ink); }
-
-  section.result {
-    margin-top: 18px;
-    display: none;
-  }
-  section.result.show { display: block; }
-
-  .panel {
-    border: 1px solid var(--line);
-    background: var(--panel);
-    border-radius: 4px;
-    padding: 16px;
-    margin-bottom: 14px;
-  }
-  .panel h2 {
-    margin: 0 0 10px;
-    font-size: 15px;
-    letter-spacing: -0.1px;
-    border-bottom: 1px solid var(--line-2);
-    padding-bottom: 6px;
-  }
-  .answer {
-    white-space: pre-wrap;
-    font-size: 14.5px;
-    color: var(--ink);
-  }
-
-  .badge {
-    display: inline-block;
-    padding: 4px 10px;
-    border-radius: 3px;
-    font-size: 12.5px;
-    border: 1px solid var(--line);
-    margin-right: 6px;
-  }
-  .badge.ok {
-    background: var(--ok-bg);
-    border-color: var(--ok-line);
-    color: var(--ink);
-  }
-  .badge.warn {
-    background: var(--warn-bg);
-    border-color: var(--warn-line);
-    color: var(--warn-ink);
-  }
-  .warnlist {
-    margin: 10px 0 0;
-    padding: 10px 12px;
-    background: var(--warn-bg);
-    border: 1px solid var(--warn-line);
-    border-radius: 3px;
-    font-size: 13px;
-    color: var(--warn-ink);
-  }
-  .warnlist ul { margin: 4px 0 0; padding-left: 18px; }
-
-  .src {
-    border: 1px solid var(--line-2);
-    border-radius: 3px;
-    padding: 10px 12px;
-    margin-bottom: 8px;
-    background: #fcfcfc;
-  }
-  .src .head {
-    display: flex;
     justify-content: space-between;
-    align-items: center;
     flex-wrap: wrap;
-    gap: 6px;
-    margin-bottom: 4px;
+    gap: 10px;
   }
-  .src .title {
-    font-weight: bold;
-    font-size: 14px;
-    color: var(--ink);
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand .mark {
+    width: 38px; height: 38px;
+    background: var(--navy);
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
   }
-  .src .meta {
-    font-size: 12px;
-    color: var(--ink-3);
+  .brand .mark svg { width: 22px; height: 22px; }
+  .brand .txt b {
+    font-size: 18px; color: var(--navy);
+    display: block; line-height: 1.2;
   }
-  .src .body {
-    font-size: 13px;
+  .brand .txt span { font-size: 11.5px; color: var(--ink-3); }
+  nav.tabs { display: flex; gap: 4px; flex-wrap: wrap; }
+  nav.tabs a {
+    padding: 7px 13px;
+    font-size: 13.5px;
     color: var(--ink-2);
-    white-space: pre-wrap;
-  }
-  .tag {
-    display: inline-block;
-    background: var(--tag-bg);
-    color: var(--tag-ink);
-    font-size: 11px;
-    padding: 2px 6px;
-    border-radius: 2px;
-    margin-left: 4px;
-  }
-  .score {
-    font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
-    font-size: 12px;
-    color: var(--ink-2);
-    background: #efefef;
-    padding: 2px 6px;
-    border-radius: 2px;
-  }
-
-  details.decomp {
-    border: 1px solid var(--line-2);
-    background: #fafafa;
-    border-radius: 3px;
-    padding: 8px 10px;
-  }
-  details.decomp > summary {
     cursor: pointer;
-    font-size: 13px;
-    color: var(--ink-2);
+    border-radius: 3px;
+    border-bottom: 2px solid transparent;
     user-select: none;
   }
-  details.decomp[open] > summary { color: var(--ink); }
-  details.decomp .sub {
+  nav.tabs a:hover { color: var(--navy); }
+  nav.tabs a.active {
+    color: var(--navy); font-weight: bold;
+    border-bottom-color: var(--gold);
+  }
+
+  main { max-width: 1080px; margin: 0 auto; padding: 22px 18px 70px; }
+  .tab { display: none; }
+  .tab.active { display: block; }
+
+  /* ---- 페이지 배너 ---- */
+  .banner {
+    background: var(--navy);
+    color: #fff;
+    border-radius: 6px;
+    padding: 26px 24px;
+    margin-bottom: 20px;
+  }
+  .banner h1 {
+    margin: 0 0 6px; font-size: 25px;
+  }
+  .banner p { margin: 0; color: #c4cedd; font-size: 13.5px; }
+  .banner .accent {
+    width: 44px; height: 3px; background: var(--gold);
+    margin-bottom: 14px;
+  }
+
+  /* ---- 홈: 그리드 ---- */
+  .home-grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 16px;
+  }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .card-head {
+    background: var(--navy);
+    color: #fff;
+    padding: 14px 16px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .card-head .ic {
+    width: 30px; height: 30px; border-radius: 4px;
+    background: rgba(255,255,255,.12);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px;
+  }
+  .card-head b { font-size: 15px; display: block; }
+  .card-head small { color: #aebccf; font-size: 11px; }
+  .card-head .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #57b368; margin-left: auto;
+  }
+
+  /* ---- 채팅 ---- */
+  .chat-body {
+    padding: 14px;
+    max-height: 430px;
+    overflow-y: auto;
+    background: #fbfaf6;
+  }
+  .msg { margin-bottom: 14px; display: flex; flex-direction: column; }
+  .msg.user { align-items: flex-end; }
+  .msg.bot { align-items: flex-start; }
+  .bubble {
+    max-width: 92%;
+    padding: 11px 13px;
+    border-radius: 8px;
+    font-size: 14px;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .msg.user .bubble {
+    background: var(--navy);
+    color: #fff;
+    border-bottom-right-radius: 2px;
+  }
+  .msg.bot .bubble {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--gold);
+    color: var(--ink);
+    border-bottom-left-radius: 2px;
+  }
+  .msg .time { font-size: 10.5px; color: var(--ink-3); margin-top: 3px; }
+
+  .ans-text { white-space: pre-wrap; }
+  .badges { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 5px; }
+  .badge {
+    display: inline-block; padding: 3px 9px;
+    border-radius: 3px; font-size: 11.5px;
+    border: 1px solid var(--line);
+  }
+  .badge.ok { background: var(--ok-bg); border-color: var(--ok); color: var(--ok); }
+  .badge.warn { background: var(--warn-bg); border-color: var(--warn); color: var(--warn); }
+  .badge.dom { background: #eef1f6; border-color: #c9d3e2; color: var(--navy); }
+  .warnbox {
+    margin-top: 8px; padding: 8px 10px;
+    background: var(--warn-bg); border: 1px solid var(--warn);
+    border-radius: 3px; font-size: 12.5px; color: #6e2018;
+  }
+  .warnbox ul { margin: 4px 0 0; padding-left: 16px; }
+  details.disc {
     margin-top: 8px;
-    font-size: 13px;
-    color: var(--ink-2);
+    border: 1px solid var(--line-2);
+    border-radius: 3px; background: #faf9f4;
+    padding: 6px 9px;
   }
-  details.decomp .sub .qline {
-    margin-top: 6px;
-    padding-top: 6px;
-    border-top: 1px dashed var(--line);
+  details.disc > summary {
+    cursor: pointer; font-size: 12px; color: var(--ink-2);
+    user-select: none;
   }
-  details.decomp ol { margin: 6px 0 0 18px; padding: 0; }
+  details.disc[open] > summary { color: var(--navy); font-weight: bold; }
+  .srcrow {
+    margin-top: 7px; padding: 7px 9px;
+    border: 1px solid var(--line-2); border-radius: 3px;
+    background: #fff; font-size: 12px;
+  }
+  .srcrow .st { font-weight: bold; color: var(--navy); font-size: 12.5px; }
+  .srcrow .sb { color: var(--ink-2); margin-top: 3px; white-space: pre-wrap; }
+  .score {
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+    font-size: 11px; background: #eee; color: var(--ink-2);
+    padding: 1px 5px; border-radius: 2px;
+  }
+  .tag {
+    display: inline-block; background: var(--navy);
+    color: #fff; font-size: 10px; padding: 1px 6px;
+    border-radius: 2px; margin-left: 4px;
+  }
+  .decomp-log ol { margin: 5px 0 0 16px; padding: 0; }
+  .decomp-log li { margin-top: 5px; }
+
+  .chat-input {
+    display: flex; gap: 8px; padding: 12px;
+    border-top: 1px solid var(--line); background: #fff;
+  }
+  .chat-input textarea {
+    flex: 1; resize: none; height: 42px;
+    border: 1px solid var(--line); border-radius: 4px;
+    padding: 9px 10px; font-family: inherit; font-size: 14px;
+    color: var(--ink);
+  }
+  .chat-input textarea:focus { outline: 1px solid var(--navy); }
+  .send-btn {
+    background: var(--navy); color: #fff; border: none;
+    width: 46px; border-radius: 4px; cursor: pointer; font-size: 16px;
+  }
+  .send-btn:hover { background: var(--navy-d); }
+  .hint { font-size: 11px; color: var(--ink-3); padding: 0 12px 10px; }
+  .quick {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    padding: 0 12px 12px;
+  }
+  .quick .q {
+    border: 1px dashed var(--line); background: #faf9f4;
+    color: var(--ink-2); font-size: 11.5px;
+    padding: 5px 9px; border-radius: 3px; cursor: pointer;
+  }
+  .quick .q:hover { border-style: solid; border-color: var(--navy); color: var(--navy); }
+
+  /* ---- 계산기 ---- */
+  .calc-body { padding: 16px; }
+  .field { margin-bottom: 13px; }
+  .field label {
+    display: block; font-size: 12.5px; color: var(--ink-2);
+    margin-bottom: 4px;
+  }
+  .field input, .field select {
+    width: 100%; padding: 9px 10px;
+    border: 1px solid var(--line); border-radius: 4px;
+    font-family: inherit; font-size: 14px; background: #fbfaf6;
+    color: var(--ink);
+  }
+  .field input:focus, .field select:focus { outline: 1px solid var(--navy); }
+  .calc-btn {
+    width: 100%; background: var(--navy); color: #fff;
+    border: none; padding: 11px; border-radius: 4px;
+    font-family: inherit; font-size: 14px; cursor: pointer;
+    margin-top: 4px;
+  }
+  .calc-btn:hover { background: var(--navy-d); }
+  .calc-out {
+    margin-top: 14px; padding: 12px;
+    border: 1px solid var(--line); border-radius: 4px;
+    background: #fbfaf6; font-size: 13px; white-space: pre-wrap;
+    display: none;
+  }
+  .calc-out.show { display: block; }
+  .calc-out .big {
+    font-size: 17px; color: var(--navy); font-weight: bold;
+    display: block; margin: 6px 0;
+  }
+
+  /* ---- 지식 베이스 ---- */
+  .kb-search {
+    width: 100%; padding: 11px 14px; font-size: 14px;
+    border: 1px solid var(--line); border-radius: 5px;
+    background: var(--panel); font-family: inherit; color: var(--ink);
+    margin-bottom: 12px;
+  }
+  .kb-search:focus { outline: 1px solid var(--navy); }
+  .filters { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+  .filters .chip {
+    border: 1px solid var(--line); background: #fff;
+    color: var(--ink-2); font-size: 12.5px;
+    padding: 6px 13px; border-radius: 3px; cursor: pointer;
+  }
+  .filters .chip.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .kb-count { font-size: 12.5px; color: var(--ink-3); margin: 4px 0 14px; }
+  .kb-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px;
+  }
+  .kb-card {
+    background: var(--panel); border: 1px solid var(--line);
+    border-top: 3px solid var(--navy-l); border-radius: 5px;
+    padding: 14px; cursor: pointer;
+  }
+  .kb-card.cat-판례 { border-top-color: #9c3b32; }
+  .kb-card.cat-협정 { border-top-color: var(--gold); }
+  .kb-card .kh {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 6px;
+  }
+  .kb-card .kname { font-weight: bold; color: var(--navy); font-size: 15px; }
+  .kb-card .kcat {
+    font-size: 10.5px; border: 1px solid var(--line);
+    padding: 1px 7px; border-radius: 2px; color: var(--ink-2);
+  }
+  .kb-card .kdate { font-size: 11px; color: var(--ink-3); margin-bottom: 6px; }
+  .kb-card .ktitle { font-size: 13.5px; font-weight: bold; margin-bottom: 2px; }
+  .kb-card .kten { font-size: 11.5px; color: var(--ink-3); margin-bottom: 8px; }
+  .kb-card .ktags { margin-bottom: 8px; }
+  .kb-card .ktags span {
+    display: inline-block; font-size: 10.5px;
+    background: #eef1f6; color: var(--navy);
+    padding: 1px 7px; border-radius: 2px; margin: 0 4px 4px 0;
+  }
+  .kb-card .kdesc { font-size: 12.5px; color: var(--ink-2); }
+  .kb-card .kfull {
+    display: none; margin-top: 8px; padding-top: 8px;
+    border-top: 1px dashed var(--line); font-size: 12.5px; color: var(--ink-2);
+  }
+  .kb-card.open .kfull { display: block; }
+  .kb-card .kmore { font-size: 11px; color: var(--gold); margin-top: 6px; }
+  .kb-empty { color: var(--ink-3); font-size: 13px; padding: 20px 0; }
+
+  /* ---- 정보 페이지 ---- */
+  .sec-title {
+    font-size: 21px; color: var(--navy); margin: 26px 0 4px;
+  }
+  .sec-rule { width: 40px; height: 3px; background: var(--gold); margin-bottom: 14px; }
+  .info-box {
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: 6px; padding: 18px; margin-bottom: 14px;
+  }
+  .info-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .mini {
+    border: 1px solid var(--line); border-top: 3px solid var(--navy);
+    border-radius: 5px; padding: 13px; background: #fbfaf6;
+  }
+  .mini .mi { font-size: 18px; margin-bottom: 6px; }
+  .mini b { color: var(--navy); display: block; margin-bottom: 4px; font-size: 13.5px; }
+  .mini p { margin: 0; font-size: 12px; color: var(--ink-2); }
+
+  .pipe { display: flex; flex-direction: column; }
+  .step {
+    display: flex; gap: 14px; align-items: flex-start;
+    background: var(--panel); border: 1px solid var(--line);
+    border-left: 3px solid var(--navy); border-radius: 5px;
+    padding: 13px 15px;
+  }
+  .step .n {
+    font-family: ui-monospace, Menlo, monospace;
+    font-size: 13px; color: var(--gold); font-weight: bold;
+    min-width: 26px;
+  }
+  .step b { color: var(--navy); font-size: 14px; }
+  .step p { margin: 3px 0 0; font-size: 12.5px; color: var(--ink-2); }
+  .arrow { text-align: center; color: var(--line); font-size: 14px; margin: 3px 0; }
+
+  table.cmp {
+    width: 100%; border-collapse: collapse; font-size: 13px;
+    background: var(--panel);
+  }
+  table.cmp th, table.cmp td {
+    border: 1px solid var(--line); padding: 8px 10px; text-align: left;
+    vertical-align: top;
+  }
+  table.cmp th { background: var(--navy); color: #fff; font-weight: bold; }
+  table.cmp td:first-child { background: #faf9f4; font-weight: bold; color: var(--navy); }
+
+  .stack-list { margin: 0; padding-left: 18px; font-size: 13px; color: var(--ink-2); }
+  .stack-list li { margin-top: 4px; }
 
   footer.note {
-    margin-top: 22px;
-    font-size: 12px;
-    color: var(--ink-3);
+    max-width: 1080px; margin: 0 auto; padding: 16px 18px 40px;
+    font-size: 11.5px; color: var(--ink-3);
     border-top: 1px solid var(--line);
-    padding-top: 12px;
   }
   footer.note b { color: var(--ink-2); }
 
-  @media (max-width: 600px) {
-    .wrap { padding: 14px 12px 60px; }
-    .compare { grid-template-columns: 1fr; }
-    header.intro h1 { font-size: 18px; }
+  @media (max-width: 760px) {
+    .home-grid { grid-template-columns: 1fr; }
+    .info-3 { grid-template-columns: 1fr; }
+    .kb-grid { grid-template-columns: 1fr; }
+    .banner h1 { font-size: 21px; }
+    .brand .txt b { font-size: 16px; }
   }
 </style>
 </head>
 <body>
-<div class="wrap">
 
-  <header class="intro">
-    <h1>TRIPS RAG v2 — Agentic 검색·검증 시스템</h1>
-    <div class="sub">
-      WTO TRIPS 협정 질의응답 · 동아리 활동 2차 버전
-      (1차 TF-IDF + 룰 기반 → 2차 Agentic + 자체검증)
+<header class="site-header">
+  <div class="brand">
+    <div class="mark">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#b58f4a" stroke-width="1.6">
+        <path d="M12 3v18M5 21h14M12 6l-7 2 7-2 7 2-7-2M5 8l-2.5 5a3 3 0 0 0 5 0L5 8zM19 8l-2.5 5a3 3 0 0 0 5 0L19 8z"/>
+      </svg>
     </div>
-    <div class="compare">
-      <div class="col">
-        <b>1차 (Emergent) 한계</b>
-        <ul>
-          <li>단일 검색만 수행, 복합 질문 분해 불가</li>
-          <li>도메인 혼동 오류 미검출</li>
-          <li>검색 점수 비공개로 신뢰도 판단 불가</li>
-        </ul>
-      </div>
-      <div class="col">
-        <b>2차 개선점</b>
-        <ul>
-          <li>질문 분해 → 다중 검색 → 통합 답변 (Agentic)</li>
-          <li>3유형(개념대체·도메인혼동·기간혼동) 자체 검증</li>
-          <li>Top-3 결과 + TF-IDF 점수 노출</li>
-        </ul>
-      </div>
+    <div class="txt">
+      <b class="serif">TradeGuide v2</b>
+      <span>WTO TRIPS · 한미 통상법 RAG 검색·검증 시스템</span>
     </div>
-  </header>
+  </div>
+  <nav class="tabs" id="nav">
+    <a data-tab="home" class="active">홈</a>
+    <a data-tab="kb">지식 베이스</a>
+    <a data-tab="how">AI 구동 원리</a>
+    <a data-tab="arch">시스템 아키텍처</a>
+  </nav>
+</header>
 
-  <section class="ask">
-    <label for="q">질문 입력</label>
-    <textarea id="q" placeholder="예: TRIPS 제31조(c)와 제35~38조의 보호기간 차이는?"></textarea>
-    <div class="btnrow">
-      <button class="primary" id="run">질의 실행</button>
-      <button class="ghost" id="clear">지우기</button>
-    </div>
-    <div class="examples" id="examples">
-      <div class="ex" data-q="반도체에서 강제실시권은 어떤 경우에 허용되는가?">반도체 강제실시권은 어떤 경우에 허용되는가?</div>
-      <div class="ex" data-q="TRIPS 제27조의 진보성은 creativity나 originality와 같은 의미인가?">제27조 진보성은 creativity와 같은가?</div>
-      <div class="ex" data-q="TRIPS 제31조와 제38조의 보호기간 차이를 비교해줘">제31조와 제38조 비교</div>
-      <div class="ex" data-q="영업비밀의 3요건은 무엇이며 유일성이 포함되는가?">영업비밀 3요건과 유일성</div>
+<main>
+  <!-- ========== 홈 ========== -->
+  <section id="tab-home" class="tab active">
+    <div class="home-grid">
+
+      <!-- 채팅 상담 -->
+      <div class="card">
+        <div class="card-head">
+          <div class="ic">💬</div>
+          <div>
+            <b>법규 상담</b>
+            <small>RAG 기반 어시스턴트 · Agentic 검색 + 자체 검증</small>
+          </div>
+          <div class="dot"></div>
+        </div>
+        <div class="chat-body" id="chatBody"></div>
+        <div class="chat-input">
+          <textarea id="chatInput" placeholder="법규 검색·비교 분석을 질문해 주세요 (Enter 전송, Shift+Enter 줄바꿈)"></textarea>
+          <button class="send-btn" id="sendBtn" title="전송">➤</button>
+        </div>
+        <div class="hint">Enter 키로 전송 · 답변마다 출처(Top-3 점수)와 신뢰도 검증이 함께 표시됩니다</div>
+        <div class="quick" id="quick">
+          <div class="q" data-q="반도체에서 강제실시권은 어떤 경우에 허용되는가?">반도체 강제실시권은?</div>
+          <div class="q" data-q="무역법 301조가 무엇인가요?">무역법 301조가 무엇인가요?</div>
+          <div class="q" data-q="TRIPS 제31조와 제38조의 보호기간 차이를 비교해줘">제31조와 제38조 비교</div>
+          <div class="q" data-q="IEEPA 위헌 판결 내용은 무엇인가요?">IEEPA 위헌 판결은?</div>
+        </div>
+      </div>
+
+      <!-- 관세 시나리오 계산기 -->
+      <div class="card">
+        <div class="card-head">
+          <div class="ic">🧮</div>
+          <div>
+            <b>관세 시나리오 계산기</b>
+            <small>관세율 변화에 따른 마진 영향 분석</small>
+          </div>
+        </div>
+        <div class="calc-body">
+          <div class="field">
+            <label for="cPrice">수출 단가 (USD)</label>
+            <input type="number" id="cPrice" value="100" min="0" />
+          </div>
+          <div class="field">
+            <label for="cCur">현재 관세율 (%)</label>
+            <input type="number" id="cCur" value="15" min="0" />
+          </div>
+          <div class="field">
+            <label for="cScn">시나리오 관세율 (%)</label>
+            <select id="cScn">
+              <option value="0">0% (IEEPA 무효 적용 시)</option>
+              <option value="15">15% (122조 임시관세 상한)</option>
+              <option value="25" selected>25% (301조 일반)</option>
+              <option value="50">50% (301조 고율)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="cFx">환율 (원/달러)</label>
+            <input type="number" id="cFx" value="1380" min="0" />
+          </div>
+          <button class="calc-btn" id="calcBtn">마진 변화 계산</button>
+          <div class="calc-out" id="calcOut"></div>
+        </div>
+      </div>
+
     </div>
   </section>
 
-  <section class="result" id="result">
-    <div class="panel">
-      <h2>답변</h2>
-      <div class="answer" id="answer"></div>
-      <div style="margin-top:12px" id="badges"></div>
-      <div id="warnbox"></div>
+  <!-- ========== 지식 베이스 ========== -->
+  <section id="tab-kb" class="tab">
+    <div class="banner">
+      <div class="accent"></div>
+      <h1 class="serif">통상·지식재산 법규 지식 베이스</h1>
+      <p>WTO TRIPS 협정과 한미 통상법 조항을 도메인·유형별로 탐색하고 검색하세요</p>
+    </div>
+    <input type="text" class="kb-search" id="kbSearch" placeholder="법규 검색… (조항명·키워드·태그)" />
+    <div class="filters" id="kbFilters">
+      <div class="chip active" data-cat="전체">전체</div>
+      <div class="chip" data-cat="협정">협정</div>
+      <div class="chip" data-cat="법률">법률</div>
+      <div class="chip" data-cat="판례">판례</div>
+    </div>
+    <div class="kb-count" id="kbCount"></div>
+    <div class="kb-grid" id="kbGrid"></div>
+  </section>
+
+  <!-- ========== AI 구동 원리 ========== -->
+  <section id="tab-how" class="tab">
+    <div class="banner">
+      <div class="accent"></div>
+      <h1 class="serif">AI 구동 원리</h1>
+      <p>TradeGuide v2가 출처 기반의 검증된 답변을 제공하는 방법</p>
     </div>
 
-    <div class="panel">
-      <h2>출처 조항 (Top-3 · TF-IDF 점수)</h2>
-      <div id="sources"></div>
+    <h2 class="sec-title serif">RAG (Retrieval-Augmented Generation) 구조</h2>
+    <div class="sec-rule"></div>
+    <div class="info-box">
+      <p style="margin-top:0">
+        TradeGuide v2는 답변을 지어내지 않습니다. 내장된 법규 문서를 먼저
+        <b>검색(Retrieval)</b>한 뒤, 검색 결과만을 근거로 답변을 구성합니다.
+        모든 답변에는 출처 조항과 TF-IDF 검색 점수가 함께 표시되어,
+        사용자가 신뢰도를 직접 확인할 수 있습니다.
+      </p>
+      <div class="info-3">
+        <div class="mini">
+          <div class="mi">🗄️</div>
+          <b>지식 베이스</b>
+          <p>WTO TRIPS 4개 조항 + 한미 통상법 3개 항목을 내부 데이터로 색인.</p>
+        </div>
+        <div class="mini">
+          <div class="mi">🔍</div>
+          <b>TF-IDF 검색</b>
+          <p>한국어 형태소 분리·동의어 확장 후 코사인 유사도로 Top-3 추출, 도메인 가중치 적용.</p>
+        </div>
+        <div class="mini">
+          <div class="mi">📝</div>
+          <b>룰 기반 답변</b>
+          <p>검색된 원문을 룰 템플릿으로 종합. LLM 환각 없이 출처에 고정된 답변.</p>
+        </div>
+      </div>
     </div>
 
-    <div class="panel">
-      <h2>추론 과정</h2>
-      <details class="decomp" id="decomp">
-        <summary>질문 분해 및 다중 검색 로그 (펼치기)</summary>
-        <div class="sub" id="decompBody"></div>
-      </details>
+    <h2 class="sec-title serif">2차 버전의 핵심 — Agentic + 자체 검증</h2>
+    <div class="sec-rule"></div>
+    <div class="info-box">
+      <div class="info-3">
+        <div class="mini">
+          <div class="mi">🧩</div>
+          <b>질문 분해</b>
+          <p>조항 번호가 여럿이거나 "비교/차이"가 포함되면 하위 질문으로 분해해 각각 검색합니다.</p>
+        </div>
+        <div class="mini">
+          <div class="mi">🔗</div>
+          <b>다중 검색·통합</b>
+          <p>하위 질문마다 별도 Top-3 검색 후 결과를 병합해 통합 답변을 생성합니다.</p>
+        </div>
+        <div class="mini">
+          <div class="mi">🛡️</div>
+          <b>3유형 자체 검증</b>
+          <p>개념 대체·도메인 혼동·기간 혼동 오류를 검사해 신뢰도 ★★★ / ★★를 표시합니다.</p>
+        </div>
+      </div>
     </div>
   </section>
 
-  <footer class="note">
-    <b>시스템 한계 안내.</b>
-    이 시스템은 학생부종합전형 동아리 활동 산출물로,
-    TF-IDF 기반 정적 검색과 룰 기반 답변 템플릿으로만 구성됩니다.
-    LLM 추론 능력은 없으며, 4개 조항(제27·31·35–38·39)에 한정된
-    내장 데이터에서만 응답합니다. 자체 검증 레이어가 표시하는
-    “신뢰도 ★★★”은 3개 휴리스틱 규칙 통과를 의미할 뿐
-    법적 정확성을 보증하지 않습니다. 실제 법률 판단에는
-    원문 및 전문가 자문이 필요합니다.
-  </footer>
-</div>
+  <!-- ========== 시스템 아키텍처 ========== -->
+  <section id="tab-arch" class="tab">
+    <div class="banner">
+      <div class="accent"></div>
+      <h1 class="serif">시스템 아키텍처</h1>
+      <p>TradeGuide v2의 RAG 파이프라인과 기술 스택</p>
+    </div>
+
+    <h2 class="sec-title serif">RAG 파이프라인</h2>
+    <div class="sec-rule"></div>
+    <div class="pipe" id="pipe"></div>
+
+    <h2 class="sec-title serif">1차 → 2차 개선</h2>
+    <div class="sec-rule"></div>
+    <table class="cmp">
+      <tr><th>항목</th><th>1차 (TradeGuide · Emergent)</th><th>2차 (TradeGuide v2)</th></tr>
+      <tr><td>검색</td><td>단일 검색, 복합 질문 분해 불가</td><td>질문 분해 → 다중 검색 → 통합 답변</td></tr>
+      <tr><td>오류 검출</td><td>도메인 혼동 등 미검출</td><td>개념대체·도메인혼동·기간혼동 3유형 자체 검증</td></tr>
+      <tr><td>검색 점수</td><td>비공개로 신뢰도 판단 불가</td><td>Top-3 결과마다 TF-IDF 점수 공개</td></tr>
+      <tr><td>배포</td><td>서버 기반 프리뷰 환경</td><td>단일 HTML · GitHub Pages 정적 배포</td></tr>
+    </table>
+
+    <h2 class="sec-title serif">기술 스택</h2>
+    <div class="sec-rule"></div>
+    <div class="info-box">
+      <ul class="stack-list">
+        <li>프런트엔드: 순수 HTML / CSS / Vanilla JavaScript (ES2018+)</li>
+        <li>검색 엔진: 클라이언트 사이드 TF-IDF + 코사인 유사도 + 도메인 가중치</li>
+        <li>전처리: 한국어 조사·어미 단순 분리, 영문 토큰화, 동의어 사전 확장</li>
+        <li>외부 의존성: 없음 (CDN·빌드 도구·백엔드 서버·API 키 모두 미사용)</li>
+        <li>배포: GitHub Pages 정적 호스팅, 단일 index.html</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<footer class="note">
+  <b>시스템 한계 안내.</b>
+  본 시스템은 학생부종합전형 동아리 활동 산출물로, TF-IDF 기반 정적 검색과
+  룰 기반 답변 템플릿으로 구성됩니다. LLM 추론 능력은 없으며, 내장된
+  WTO TRIPS 4개 조항(제27·31·35–38·39)과 한미 통상법 3개 항목에 한해서만
+  응답합니다. 검증 레이어의 "신뢰도 ★★★"은 3개 휴리스틱 규칙 통과를
+  의미할 뿐 법적 정확성을 보증하지 않습니다. 관세 시나리오 계산기는
+  단순 산술 모델이며 실제 거래에는 운임·부가세·원산지 규정 등이 추가로
+  반영되어야 합니다. 실제 법률·통상 판단에는 원문 및 전문가 자문이 필요합니다.
+</footer>
 
 <script>
 /* ============================================================
- * TRIPS RAG v2 — single-file client-side RAG
+ * TradeGuide v2 — single-file client-side RAG
  * ============================================================ */
 
-/* ---------- 1. 조항 데이터 ---------- */
+/* ---------- 1. 법규 데이터 (TRIPS 4 + 한미 통상법 3) ---------- */
 const CORPUS = [
   {
-    docId: "art27",
+    docId: "art27", label: "TRIPS 27조", category: "협정", domain: "일반", date: "1995.01.01",
     title: "TRIPS 제27조 — 특허의 대상 (진보성)",
-    domain: "일반",
+    titleEn: "TRIPS Article 27 — Patentable Subject Matter",
+    tags: ["협정", "TRIPS", "특허", "진보성"],
     text:
       "TRIPS 제27조 1항: 특허는 모든 기술 분야의 발명에 대해 부여될 수 있으며, " +
       "신규성(novelty), 진보성(inventive step), 산업상 이용가능성(industrial applicability)을 " +
@@ -388,9 +626,10 @@ const CORPUS = [
                "non-obvious", "novelty", "각주5", "footnote", "27조"],
   },
   {
-    docId: "art31c",
+    docId: "art31c", label: "TRIPS 31조(c)", category: "협정", domain: "반도체", date: "1995.01.01",
     title: "TRIPS 제31조(c) — 반도체 기술 강제실시권의 제한",
-    domain: "반도체",
+    titleEn: "TRIPS Article 31(c) — Compulsory Licensing for Semiconductors",
+    tags: ["협정", "TRIPS", "강제실시권", "반도체"],
     text:
       "TRIPS 제31조(c): 반도체(semi-conductor) 기술에 대한 강제실시권(compulsory licensing)은 " +
       "오직 (i) 공공의 비상업적 사용(public non-commercial use) 또는 " +
@@ -404,9 +643,10 @@ const CORPUS = [
                "반경쟁", "anti-competitive", "31조", "31(c)", "공공의비상업적사용"],
   },
   {
-    docId: "art35_38",
+    docId: "art35_38", label: "TRIPS 35–38조", category: "협정", domain: "반도체", date: "1995.01.01",
     title: "TRIPS 제35조~제38조 — 집적회로 배치설계 보호",
-    domain: "반도체",
+    titleEn: "TRIPS Articles 35–38 — Layout-Designs of Integrated Circuits",
+    tags: ["협정", "TRIPS", "배치설계", "보호기간"],
     text:
       "TRIPS 제35조~제38조: 집적회로(integrated circuit)의 배치설계(layout-design, topography)는 " +
       "1989년 워싱턴 조약을 기반으로 보호된다. 제38조 보호기간은 " +
@@ -419,9 +659,10 @@ const CORPUS = [
                "최초상업적이용일", "38조", "35조", "36조", "37조", "보호기간"],
   },
   {
-    docId: "art39",
+    docId: "art39", label: "TRIPS 39조", category: "협정", domain: "일반", date: "1995.01.01",
     title: "TRIPS 제39조 — 미공개 정보(영업비밀) 보호",
-    domain: "일반",
+    titleEn: "TRIPS Article 39 — Protection of Undisclosed Information",
+    tags: ["협정", "TRIPS", "영업비밀", "3요건"],
     text:
       "TRIPS 제39조 2항: 영업비밀(undisclosed information, trade secret)은 다음 3요건을 " +
       "모두 갖춰야 보호된다. " +
@@ -434,6 +675,49 @@ const CORPUS = [
     nums: [],
     keywords: ["영업비밀", "미공개정보", "trade", "secret", "비밀성", "상업적가치",
                "합리적조치", "39조", "3요건", "undisclosed"],
+  },
+  {
+    docId: "ieepa", label: "IEEPA", category: "판례", domain: "통상", date: "2026.02.20",
+    title: "미국 연방대법원 IEEPA 관세 위법·무효 판결",
+    titleEn: "Supreme Court IEEPA Tariff Ruling",
+    tags: ["판례", "IEEPA", "위헌", "관세"],
+    text:
+      "미국 연방대법원은 IEEPA(국제비상경제권한법)를 근거로 부과된 모든 관세를 " +
+      "위법·무효로 판결했다. 재판부는 6 대 3 의견으로, 대통령에게 IEEPA만을 " +
+      "근거로 관세를 부과할 권한이 없다고 판시했다. 이에 따라 IEEPA 기반 관세는 " +
+      "효력을 상실하며, 관세 부과는 의회가 정한 통상법(예: 제122조, 제301조) 절차에 " +
+      "따라야 한다.",
+    nums: [],
+    keywords: ["ieepa", "국제비상경제권한법", "연방대법원", "위헌", "위법", "무효",
+               "관세", "판결", "대통령", "권한"],
+  },
+  {
+    docId: "sec122", label: "무역법 122조", category: "법률", domain: "통상", date: "2026.02.24",
+    title: "무역법 제122조 — 임시 관세",
+    titleEn: "Trade Act Section 122 — Temporary Tariff",
+    tags: ["법률", "122조", "임시관세", "관세"],
+    text:
+      "무역법 제122조는 150일간 적용되는 한시 관세를 허용하며, 세율 상한은 15%이다. " +
+      "이 임시 관세는 심각한 무역 적자에 대응하기 위한 수단으로, 의회의 별도 승인 없이 " +
+      "대통령이 부과할 수 있다. 적용 시한이 정해져 있어 150일이 지나면 자동으로 종료되며, " +
+      "연장하려면 추가 입법 절차가 필요하다.",
+    nums: [],
+    keywords: ["122조", "무역법", "임시관세", "한시관세", "150일", "15%", "상한",
+               "무역적자", "관세"],
+  },
+  {
+    docId: "sec301", label: "무역법 301조", category: "법률", domain: "통상", date: "2026.03.11",
+    title: "무역법 제301조 — 불공정 무역 조사",
+    titleEn: "Trade Act Section 301 — Unfair Trade Investigation",
+    tags: ["법률", "301조", "조사", "관세"],
+    text:
+      "무역법 제301조는 외국의 불공정 무역 관행에 대응하기 위한 조사·보복 절차를 규정한다. " +
+      "현재 16개 경제주체를 대상으로 조사가 진행 중이며, 제122조와 달리 관세율 상한이 없고 " +
+      "품목별로 차등 관세를 부과할 수 있다. 조사는 일정 기간을 거쳐 완료되며, " +
+      "그 결과에 따라 보복 관세의 범위와 세율이 결정된다.",
+    nums: [],
+    keywords: ["301조", "무역법", "조사", "불공정무역", "보복관세", "차등관세",
+               "상한없음", "관세", "경제주체"],
   },
 ];
 
@@ -449,10 +733,14 @@ const SYNONYMS = [
   ["반경쟁", "anti-competitive", "anticompetitive", "반경쟁적"],
   ["특허", "patent", "특허권"],
   ["발명", "invention", "신규성", "novelty"],
+  ["관세", "tariff", "duty", "관세율"],
+  ["무역법", "trade act", "통상법"],
+  ["임시관세", "한시관세", "temporary tariff"],
+  ["조사", "investigation", "불공정무역"],
+  ["위헌", "위법", "무효", "unconstitutional"],
 ];
 
 /* ---------- 3. 한국어/영문 토크나이저 ---------- */
-// 한국어 조사·어미 단순 제거 + 공백/구두점 분리, 영문 lowercase
 const KO_PARTICLES = [
   "은", "는", "이", "가", "을", "를", "의", "에", "에서", "으로", "로",
   "와", "과", "도", "만", "이나", "나", "이라", "라", "이며", "며",
@@ -463,21 +751,13 @@ const KO_PARTICLES = [
 
 function tokenize(str) {
   if (!str) return [];
-  // 영문/숫자/한글 외 구두점은 공백으로 치환
   let s = str.toLowerCase()
     .replace(/[　-〿＀-￯!"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~]/g, " ");
-  // 단순 분리
   let raw = s.split(/\s+/).filter(Boolean);
   let out = [];
   for (let tok of raw) {
-    if (/^[a-z0-9]+$/.test(tok)) {
-      // 영문/숫자 토큰은 그대로
-      out.push(tok);
-      continue;
-    }
-    // 한글 토큰: 조사/어미 단순 절단
+    if (/^[a-z0-9]+$/.test(tok)) { out.push(tok); continue; }
     let t = tok;
-    // 가장 긴 조사부터 매치
     const sorted = KO_PARTICLES.slice().sort((a, b) => b.length - a.length);
     for (let p of sorted) {
       if (t.length > p.length + 1 && t.endsWith(p)) {
@@ -487,7 +767,6 @@ function tokenize(str) {
     }
     if (t.length >= 1) out.push(t);
   }
-  // 동의어 확장
   let expanded = [];
   for (let t of out) {
     expanded.push(t);
@@ -506,7 +785,8 @@ function tokenize(str) {
 }
 
 /* ---------- 4. TF-IDF 인덱스 ---------- */
-const DOC_TOKENS = CORPUS.map(d => tokenize(d.title + " " + d.text + " " + d.keywords.join(" ")));
+const DOC_TOKENS = CORPUS.map(d =>
+  tokenize(d.title + " " + d.text + " " + d.keywords.join(" ")));
 const N = CORPUS.length;
 const DF = {};
 for (let toks of DOC_TOKENS) {
@@ -536,9 +816,11 @@ const DOC_NORM = DOC_VEC.map(v => {
 /* ---------- 5. 도메인 추정 ---------- */
 function inferDomain(qTokens) {
   const text = qTokens.join(" ");
+  if (/관세|무역법|tariff|통상|301|ieepa|122조|수출|보복|불공정/.test(text))
+    return "통상";
   if (/반도체|semiconductor|semi-conductor|배치설계|layout|integrated|circuit|topography|집적회로/.test(text))
     return "반도체";
-  if (/의약|약|public health|공공보건|도하|doha|pharma/.test(text))
+  if (/의약|public health|공공보건|도하|doha|pharma/.test(text))
     return "의약품";
   if (/디지털|digital|software|소프트웨어/.test(text))
     return "디지털";
@@ -565,7 +847,6 @@ function search(query, topK = 3) {
       if (DOC_VEC[i][t]) dot += qv[t] * DOC_VEC[i][t];
     }
     let cos = dot / (qn * DOC_NORM[i]);
-    // 도메인 일치 가중치
     let boost = 1.0;
     if (qDomain !== "일반" && doc.domain === qDomain) boost = 1.35;
     if (qDomain === "의약품" && doc.docId === "art31c") boost = 1.15;
@@ -578,7 +859,6 @@ function search(query, topK = 3) {
 
 /* ---------- 7. 질문 분해 (Agentic) ---------- */
 function decompose(question) {
-  // 조항 번호 검출
   const articleMatches = [...question.matchAll(/제?\s*(\d{1,3})\s*조(?:\s*\(([a-z])\))?/gi)];
   const articles = articleMatches.map(m => `제${m[1]}조${m[2] ? "(" + m[2] + ")" : ""}`);
   const uniqueArticles = [...new Set(articles)];
@@ -587,8 +867,6 @@ function decompose(question) {
   const multiArticle = uniqueArticles.length >= 2;
 
   if (multiArticle) {
-    // 조항 번호를 제거한 나머지를 '공통 맥락'으로 추출해 각 하위 질문에 결합.
-    // 맥락 없이 조항 번호만 검색하면 TF-IDF 점수가 거의 0으로 떨어진다.
     const context = question
       .replace(/trips/gi, " ")
       .replace(/제?\s*\d{1,3}\s*조(?:\s*\([a-z]\))?/gi, " ")
@@ -616,7 +894,6 @@ function decompose(question) {
     };
   }
   if (compareKeyword) {
-    // "A와 B 비교" 형태에서 A/B 추출 시도
     const parts = question
       .replace(/[?？!.]/g, "")
       .split(/와|과|vs|versus|및/)
@@ -632,7 +909,6 @@ function decompose(question) {
 
 /* ---------- 8. 답변 생성 (룰 기반 템플릿) ---------- */
 function buildAnswer(question, hitsList) {
-  // hitsList = [{subQ, hits:[{doc,score},...]}, ...]
   const merged = {};
   for (let block of hitsList) {
     for (let h of block.hits) {
@@ -646,8 +922,9 @@ function buildAnswer(question, hitsList) {
 
   if (top.length === 0 || top[0].score < 0.05) {
     return {
-      text: "내장 코퍼스(제27·31·35–38·39조)에서 관련 근거를 충분히 찾지 못했습니다. " +
-            "질문을 더 구체적으로 작성하거나 조항 번호를 명시해 주세요.",
+      text: "내장 지식 베이스(TRIPS 제27·31·35–38·39조, 한미 통상법 IEEPA·122조·301조)에서 " +
+            "관련 근거를 충분히 찾지 못했습니다. 질문을 더 구체적으로 작성하거나 " +
+            "조항 번호를 명시해 주세요.",
       cited: [],
     };
   }
@@ -662,9 +939,6 @@ function buildAnswer(question, hitsList) {
     if (hitsList.length > 1) parts.push(`▸ 하위 질문: ${block.subQ}`);
     const h = block.hits[0];
     if (h && h.score >= 0.05) {
-      // 본문 전체(최대 6문장)를 인용. 코퍼스 문서가 짧고, 경고/예외/부정
-      // 맥락이 본문 후반에 위치하기 때문에 앞부분만 자르면 핵심이 누락된다.
-      // 문장 분리는 lookbehind 없이 처리(구형 Safari 호환).
       const sents = h.doc.text
         .replace(/([.!?。])\s+/g, "$1\n")
         .split("\n")
@@ -681,54 +955,41 @@ function buildAnswer(question, hitsList) {
   const titles = top.map(t => t.doc.title.replace(/^TRIPS\s/, "")).join(" / ");
   parts.push(`근거 조항: ${titles}`);
 
-  return {
-    text: parts.join("\n"),
-    cited: top.map(t => t.doc),
-  };
+  return { text: parts.join("\n"), cited: top.map(t => t.doc) };
 }
 
 /* ---------- 9. 검증 레이어 ---------- */
 function validate(question, answerText, citedDocs) {
   const warnings = [];
-
-  // (1) 개념 대체 오류: creativity/originality가 답변에 등장하면서
-  //     citedDocs 안의 art27의 '주의' 맥락이 아니라 답변 본문에 등장
   const lowerAns = answerText.toLowerCase();
+
   if (/\bcreativity\b/.test(lowerAns) || /\boriginality\b/.test(lowerAns) ||
       /창작성|독창성/.test(answerText)) {
-    // 답변이 "법적 용어가 아니다"라고 명시하지 않았으면 경고
     if (!/법적 용어가 아니|아니다|개념 대체/.test(answerText)) {
       warnings.push("개념 대체 오류 의심: 답변에 'creativity/originality'가 등장합니다. " +
         "이는 저작권법 용어이며 TRIPS 특허 요건이 아닙니다.");
     }
   }
-  // 답변이 영업비밀 관련이고 '유일성/uniqueness'가 등장하면 경고
   if ((/영업비밀|trade secret|39조/.test(answerText)) &&
       /유일성|uniqueness/.test(answerText) &&
       !/요건이 아니|아니다/.test(answerText)) {
     warnings.push("개념 대체 오류 의심: '유일성/uniqueness'은 제39조 영업비밀 요건이 아닙니다.");
   }
 
-  // (2) 도메인 혼동 오류: 질문이 반도체인데 답변에 의약품/공공보건이 등장
-  // 단, 답변에 부정 맥락("적용되지 않", "별개", "다른 트랙", "도메인 혼동")이 있으면
-  // 정상적인 비교/구분 설명이므로 경고하지 않음
   const qDomain = inferDomain(tokenize(question));
   if (qDomain === "반도체") {
     if (/공공보건|public health|의약품|pharma|도하|doha/.test(answerText)) {
       const hasNegation = /적용되지\s*않|별개|다른\s*트랙|다른\s*보호|혼동\s*오류|예외가\s*아니|해당\s*없/.test(answerText);
       if (!hasNegation) {
         warnings.push("도메인 혼동 오류 의심: 반도체 관련 질문에 의약품/공공보건 표현이 섞였습니다. " +
-          "TRIPS 제31조(c) 반도체 강제실시는 도하 선언/제31조의2의 의약품 예외와 다른 별개의 트랙입니다.");
+          "TRIPS 제31조(c) 반도체 강제실시는 의약품 공공보건 예외와 다른 별개의 트랙입니다.");
       }
     }
   }
 
-  // (3) 기간 혼동 오류: 답변에 등장한 연수와 인용 조항의 nums가 불일치
-  // \d+ 가 숫자 전체를 욕심껏 잡으므로 "1989년"은 1989로 추출되고,
-  // < 100 필터에서 자동 제외된다. lookbehind 미사용(구형 Safari 호환).
   const yrMatches = [...answerText.matchAll(/(\d+)\s*년/g)]
     .map(m => parseInt(m[1], 10))
-    .filter(n => n > 0 && n < 100); // 보호기간은 통상 100년 미만
+    .filter(n => n > 0 && n < 100);
   const allowedNums = new Set();
   citedDocs.forEach(d => d.nums.forEach(n => allowedNums.add(n)));
   for (let y of yrMatches) {
@@ -738,148 +999,293 @@ function validate(question, answerText, citedDocs) {
       break;
     }
   }
-
-  return {
-    pass: warnings.length === 0,
-    warnings,
-  };
+  return { pass: warnings.length === 0, warnings };
 }
 
 /* ---------- 10. 메인 파이프라인 ---------- */
 function runPipeline(question) {
   const dec = decompose(question);
-  const subs = dec.subs;
-  const hitsList = subs.map(sq => ({ subQ: sq, hits: search(sq, 3) }));
+  const hitsList = dec.subs.map(sq => ({ subQ: sq, hits: search(sq, 3) }));
   const ans = buildAnswer(question, hitsList);
   const ver = validate(question, ans.text, ans.cited);
   return { dec, hitsList, ans, ver };
 }
 
-/* ---------- 11. UI 렌더 ---------- */
+/* ---------- 11. 공통 유틸 ---------- */
 const $ = id => document.getElementById(id);
-
-function renderResult(question) {
-  const { dec, hitsList, ans, ver } = runPipeline(question);
-  $("answer").textContent = ans.text;
-
-  // 배지
-  const b = $("badges");
-  b.innerHTML = "";
-  if (ver.pass) {
-    const span = document.createElement("span");
-    span.className = "badge ok";
-    span.textContent = "검증 통과 — 신뢰도 ★★★";
-    b.appendChild(span);
-  } else {
-    const span = document.createElement("span");
-    span.className = "badge warn";
-    span.textContent = "검증 경고 — 신뢰도 ★★";
-    b.appendChild(span);
-  }
-  // 도메인 추정 배지
-  const dom = inferDomain(tokenize(question));
-  const dspan = document.createElement("span");
-  dspan.className = "badge";
-  dspan.textContent = "추정 도메인: " + dom;
-  b.appendChild(dspan);
-
-  // 경고 박스
-  const wbox = $("warnbox");
-  wbox.innerHTML = "";
-  if (!ver.pass) {
-    const w = document.createElement("div");
-    w.className = "warnlist";
-    w.innerHTML = "<b>자체 검증 경고</b><ul>" +
-      ver.warnings.map(x => "<li>" + escapeHtml(x) + "</li>").join("") + "</ul>";
-    wbox.appendChild(w);
-  }
-
-  // 출처
-  const s = $("sources");
-  s.innerHTML = "";
-  // 통합 Top-3
-  const merged = {};
-  for (let block of hitsList) {
-    for (let h of block.hits) {
-      if (!merged[h.doc.docId] || merged[h.doc.docId].score < h.score) merged[h.doc.docId] = h;
-    }
-  }
-  const top3 = Object.values(merged).sort((a, b) => b.score - a.score).slice(0, 3);
-  if (top3.length === 0) {
-    s.innerHTML = "<div class='src'><div class='body'>검색 결과 없음.</div></div>";
-  } else {
-    for (let h of top3) {
-      const card = document.createElement("div");
-      card.className = "src";
-      card.innerHTML =
-        `<div class="head">
-           <div class="title">${escapeHtml(h.doc.title)}<span class="tag">${escapeHtml(h.doc.domain)}</span></div>
-           <div class="meta">
-             <span class="score">cos=${h.raw.toFixed(3)}</span>
-             <span class="score">×${h.boost.toFixed(2)}</span>
-             <span class="score">최종=${h.score.toFixed(3)}</span>
-           </div>
-         </div>
-         <div class="body">${escapeHtml(h.doc.text)}</div>`;
-      s.appendChild(card);
-    }
-  }
-
-  // 추론 과정
-  const dbody = $("decompBody");
-  let html = "";
-  html += `<div><b>분해 여부:</b> ${dec.decomposed ? "분해됨" : "분해 없음"} (${escapeHtml(dec.reason)})</div>`;
-  html += `<ol>`;
-  for (let i = 0; i < hitsList.length; i++) {
-    const block = hitsList[i];
-    html += `<li class="qline"><b>하위 질문 ${i + 1}:</b> ${escapeHtml(block.subQ)}<br>`;
-    if (block.hits.length === 0) {
-      html += "검색 결과 없음";
-    } else {
-      html += "<ul>";
-      for (let h of block.hits) {
-        html += `<li>[${escapeHtml(h.doc.title)}] cos=${h.raw.toFixed(3)} × ${h.boost.toFixed(2)} = ${h.score.toFixed(3)} <span class="tag">${escapeHtml(h.doc.domain)}</span></li>`;
-      }
-      html += "</ul>";
-    }
-    html += `</li>`;
-  }
-  html += `</ol>`;
-  dbody.innerHTML = html;
-
-  $("result").classList.add("show");
-  $("result").scrollIntoView({ behavior: "smooth", block: "start" });
-}
-
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
   }[c]));
 }
+function nowTime() {
+  const d = new Date();
+  let h = d.getHours();
+  const m = String(d.getMinutes()).padStart(2, "0");
+  const ap = h < 12 ? "오전" : "오후";
+  h = h % 12; if (h === 0) h = 12;
+  return `${ap} ${h}:${m}`;
+}
 
-/* ---------- 12. 이벤트 ---------- */
-$("run").addEventListener("click", () => {
-  const q = $("q").value.trim();
-  if (!q) { $("q").focus(); return; }
-  renderResult(q);
+/* ---------- 12. 탭 내비게이션 ---------- */
+$("nav").addEventListener("click", e => {
+  const a = e.target.closest("a[data-tab]");
+  if (!a) return;
+  const tab = a.dataset.tab;
+  document.querySelectorAll("nav.tabs a").forEach(x =>
+    x.classList.toggle("active", x === a));
+  const target = document.getElementById("tab-" + tab);
+  document.querySelectorAll(".tab").forEach(s =>
+    s.classList.toggle("active", s === target));
+  window.scrollTo(0, 0);
 });
-$("clear").addEventListener("click", () => {
-  $("q").value = "";
-  $("result").classList.remove("show");
-  $("q").focus();
+
+/* ---------- 13. 채팅 ---------- */
+const chatBody = $("chatBody");
+
+function addMsg(role, htmlContent) {
+  const wrap = document.createElement("div");
+  wrap.className = "msg " + role;
+  const bubble = document.createElement("div");
+  bubble.className = "bubble";
+  bubble.innerHTML = htmlContent;
+  const time = document.createElement("div");
+  time.className = "time";
+  time.textContent = nowTime();
+  wrap.appendChild(bubble);
+  wrap.appendChild(time);
+  chatBody.appendChild(wrap);
+  chatBody.scrollTop = chatBody.scrollHeight;
+}
+
+function botGreeting() {
+  addMsg("bot",
+    "안녕하세요. WTO TRIPS·한미 통상법 길잡이 <b>TradeGuide v2</b>입니다.\n\n" +
+    "다음을 도와드릴 수 있습니다:\n\n" +
+    "• <b>법규 검색</b> — 반도체 강제실시권은 언제 허용되나요? / 무역법 301조가 무엇인가요?\n\n" +
+    "• <b>비교 분석</b> — 제31조와 제38조의 보호기간 차이는? (질문을 자동 분해해 검색)\n\n" +
+    "• <b>자체 검증</b> — 답변마다 개념대체·도메인혼동·기간혼동 3유형 오류를 검사해 " +
+    "신뢰도(★★★ / ★★)와 출처 점수를 표시합니다.\n\n" +
+    "궁금하신 내용을 자유롭게 질문해 주세요.");
+}
+
+function buildBotResponseHtml(question) {
+  const { dec, hitsList, ans, ver } = runPipeline(question);
+  let html = `<div class="ans-text">${escapeHtml(ans.text)}</div>`;
+
+  // 배지
+  html += `<div class="badges">`;
+  if (ver.pass) {
+    html += `<span class="badge ok">검증 통과 — 신뢰도 ★★★</span>`;
+  } else {
+    html += `<span class="badge warn">검증 경고 — 신뢰도 ★★</span>`;
+  }
+  const dom = inferDomain(tokenize(question));
+  html += `<span class="badge dom">추정 도메인: ${escapeHtml(dom)}</span></div>`;
+
+  // 경고
+  if (!ver.pass) {
+    html += `<div class="warnbox"><b>자체 검증 경고</b><ul>` +
+      ver.warnings.map(w => `<li>${escapeHtml(w)}</li>`).join("") +
+      `</ul></div>`;
+  }
+
+  // 출처 Top-3
+  const merged = {};
+  for (let block of hitsList) {
+    for (let h of block.hits) {
+      if (!merged[h.doc.docId] || merged[h.doc.docId].score < h.score)
+        merged[h.doc.docId] = h;
+    }
+  }
+  const top3 = Object.values(merged).sort((a, b) => b.score - a.score).slice(0, 3);
+  html += `<details class="disc"><summary>출처 조항 Top-3 (TF-IDF 점수)</summary>`;
+  if (top3.length === 0) {
+    html += `<div class="srcrow">검색 결과 없음.</div>`;
+  } else {
+    for (let h of top3) {
+      html += `<div class="srcrow">
+        <div class="st">${escapeHtml(h.doc.title)}<span class="tag">${escapeHtml(h.doc.domain)}</span></div>
+        <div><span class="score">cos=${h.raw.toFixed(3)}</span>
+        <span class="score">×${h.boost.toFixed(2)}</span>
+        <span class="score">최종=${h.score.toFixed(3)}</span></div>
+        <div class="sb">${escapeHtml(h.doc.text)}</div>
+      </div>`;
+    }
+  }
+  html += `</details>`;
+
+  // 추론 과정
+  html += `<details class="disc decomp-log"><summary>추론 과정 (질문 분해 로그)</summary>`;
+  html += `<div style="font-size:12px;margin-top:6px"><b>분해 여부:</b> ` +
+    `${dec.decomposed ? "분해됨" : "분해 없음"} (${escapeHtml(dec.reason)})</div><ol>`;
+  hitsList.forEach((block, i) => {
+    html += `<li><b>하위 질문 ${i + 1}:</b> ${escapeHtml(block.subQ)}<br>`;
+    if (block.hits.length === 0) {
+      html += `검색 결과 없음`;
+    } else {
+      html += block.hits.map(h =>
+        `[${escapeHtml(h.doc.title)}] ${h.score.toFixed(3)}`).join(" · ");
+    }
+    html += `</li>`;
+  });
+  html += `</ol></details>`;
+  return html;
+}
+
+function sendQuestion(q) {
+  q = (q || "").trim();
+  if (!q) return;
+  addMsg("user", escapeHtml(q));
+  setTimeout(() => addMsg("bot", buildBotResponseHtml(q)), 120);
+}
+
+$("sendBtn").addEventListener("click", () => {
+  sendQuestion($("chatInput").value);
+  $("chatInput").value = "";
 });
-$("q").addEventListener("keydown", e => {
-  if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+$("chatInput").addEventListener("keydown", e => {
+  if (e.key === "Enter" && !e.shiftKey) {
     e.preventDefault();
-    $("run").click();
+    sendQuestion($("chatInput").value);
+    $("chatInput").value = "";
   }
 });
-document.querySelectorAll(".examples .ex").forEach(el => {
-  el.addEventListener("click", () => {
-    $("q").value = el.dataset.q;
-    $("run").click();
-  });
+$("quick").addEventListener("click", e => {
+  const q = e.target.closest(".q");
+  if (q) sendQuestion(q.dataset.q);
 });
+
+/* ---------- 14. 관세 시나리오 계산기 ---------- */
+function won(n) { return "₩" + Math.round(n).toLocaleString("ko-KR"); }
+function usd(n) { return "$" + n.toFixed(2); }
+
+$("calcBtn").addEventListener("click", () => {
+  const price = parseFloat($("cPrice").value) || 0;
+  const cur = parseFloat($("cCur").value) || 0;
+  const scn = parseFloat($("cScn").value) || 0;
+  const fx = parseFloat($("cFx").value) || 0;
+
+  const curDutyU = price * cur / 100;
+  const scnDutyU = price * scn / 100;
+  const deltaU = scnDutyU - curDutyU;
+  const curLandedW = price * (1 + cur / 100) * fx;
+  const scnLandedW = price * (1 + scn / 100) * fx;
+  const pctChange = curLandedW > 0
+    ? ((scnLandedW - curLandedW) / curLandedW * 100) : 0;
+  const ppDelta = scn - cur;
+
+  let out = `수출 단가 ${usd(price)} · 환율 ${fx.toLocaleString("ko-KR")}원 기준\n\n`;
+  out += `· 현재 관세(${cur}%): 단가당 ${usd(curDutyU)} (${won(curDutyU * fx)})\n`;
+  out += `· 시나리오 관세(${scn}%): 단가당 ${usd(scnDutyU)} (${won(scnDutyU * fx)})\n\n`;
+  out += `· 수입 원가(관세 포함): ${won(curLandedW)} → ${won(scnLandedW)}\n`;
+  out += `<span class="big">추가 관세 부담: ${deltaU >= 0 ? "+" : ""}${usd(deltaU)} ` +
+         `(${deltaU >= 0 ? "+" : ""}${won(deltaU * fx)})</span>`;
+  out += `· 관세율 변화: ${ppDelta >= 0 ? "+" : ""}${ppDelta}%p, ` +
+         `수입 원가 ${pctChange >= 0 ? "+" : ""}${pctChange.toFixed(1)}%\n\n`;
+  if (ppDelta > 0) {
+    out += `→ 판매가를 유지할 경우 단가당 영업이익이 약 ${won(deltaU * fx)} 줄어듭니다. ` +
+           `같은 마진을 지키려면 판매가를 약 ${pctChange.toFixed(1)}% 인상해야 합니다.`;
+  } else if (ppDelta < 0) {
+    out += `→ 관세 인하분만큼 단가당 ${won(-deltaU * fx)}의 원가 여력이 생깁니다.`;
+  } else {
+    out += `→ 관세율 변화가 없어 마진 영향이 없습니다.`;
+  }
+  const el = $("calcOut");
+  el.innerHTML = out;
+  el.classList.add("show");
+});
+
+/* ---------- 15. 지식 베이스 ---------- */
+let kbFilter = "전체";
+
+function catIcon(cat) {
+  return cat === "판례" ? "⚖" : cat === "법률" ? "§" : "◆";
+}
+
+function renderKb() {
+  const q = $("kbSearch").value.trim().toLowerCase();
+  const grid = $("kbGrid");
+  grid.innerHTML = "";
+  let shown = 0;
+  CORPUS.forEach(d => {
+    if (kbFilter !== "전체" && d.category !== kbFilter) return;
+    if (q) {
+      const hay = (d.title + " " + d.titleEn + " " + d.text + " " +
+        d.tags.join(" ") + " " + d.keywords.join(" ")).toLowerCase();
+      if (!hay.includes(q)) return;
+    }
+    shown++;
+    const card = document.createElement("div");
+    card.className = "kb-card cat-" + d.category;
+    const desc = d.text.replace(/([.!?。])\s+/g, "$1\n").split("\n").slice(0, 2).join(" ");
+    card.innerHTML =
+      `<div class="kh">
+         <span class="kname">${escapeHtml(catIcon(d.category))} ${escapeHtml(d.label)}</span>
+         <span class="kcat">${escapeHtml(d.category)}</span>
+       </div>
+       <div class="kdate">${escapeHtml(d.date)}</div>
+       <div class="ktitle">${escapeHtml(d.title)}</div>
+       <div class="kten">${escapeHtml(d.titleEn)}</div>
+       <div class="ktags">${d.tags.map(t => `<span>${escapeHtml(t)}</span>`).join("")}</div>
+       <div class="kdesc">${escapeHtml(desc)}</div>
+       <div class="kfull">${escapeHtml(d.text)}</div>
+       <div class="kmore">▸ 전체 보기</div>`;
+    card.addEventListener("click", () => {
+      card.classList.toggle("open");
+      card.querySelector(".kmore").textContent =
+        card.classList.contains("open") ? "▾ 접기" : "▸ 전체 보기";
+    });
+    grid.appendChild(card);
+  });
+  $("kbCount").textContent = `${shown}개 조항`;
+  if (shown === 0) {
+    grid.innerHTML = `<div class="kb-empty">검색 결과가 없습니다.</div>`;
+  }
+}
+
+$("kbSearch").addEventListener("input", renderKb);
+$("kbFilters").addEventListener("click", e => {
+  const chip = e.target.closest(".chip");
+  if (!chip) return;
+  kbFilter = chip.dataset.cat;
+  document.querySelectorAll("#kbFilters .chip").forEach(c =>
+    c.classList.toggle("active", c === chip));
+  renderKb();
+});
+
+/* ---------- 16. 아키텍처 파이프라인 ---------- */
+const PIPELINE = [
+  ["01", "사용자 질문 입력", "예: \"제31조와 제38조의 보호기간 차이는?\""],
+  ["02", "질문 분해 (Agentic)", "조항 번호가 여럿이거나 비교 키워드가 있으면 하위 질문으로 분해"],
+  ["03", "토큰화 + 동의어 확장", "한국어 조사·어미 단순 분리, 영문 토큰화, 동의어 사전 적용"],
+  ["04", "TF-IDF 벡터화", "질문과 7개 문서를 TF-IDF 벡터로 변환"],
+  ["05", "유사도 검색", "코사인 유사도 계산 + 도메인 일치 가중치(×1.35) → Top-3 추출"],
+  ["06", "룰 기반 답변 생성", "검색된 원문을 룰 템플릿으로 종합 (하위 질문 결과 병합)"],
+  ["07", "자체 검증", "개념대체·도메인혼동·기간혼동 3유형 휴리스틱 검사"],
+  ["08", "신뢰도 표시", "검증 통과 ★★★ / 경고 ★★ + 출처 점수 노출"],
+];
+(function renderPipe() {
+  const pipe = $("pipe");
+  PIPELINE.forEach((s, i) => {
+    const step = document.createElement("div");
+    step.className = "step";
+    step.innerHTML =
+      `<div class="n">${s[0]}</div>
+       <div><b>${escapeHtml(s[1])}</b><p>${escapeHtml(s[2])}</p></div>`;
+    pipe.appendChild(step);
+    if (i < PIPELINE.length - 1) {
+      const ar = document.createElement("div");
+      ar.className = "arrow";
+      ar.textContent = "↓";
+      pipe.appendChild(ar);
+    }
+  });
+})();
+
+/* ---------- 17. 초기화 ---------- */
+botGreeting();
+renderKb();
 </script>
 </body>
 </html>
