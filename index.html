@@ -496,10 +496,38 @@
     .brand .txt b { font-size: 16px; }
     nav.tabs a { padding: 7px 10px; }
   }
+  /* ---- 보고서 시트 (PDF 출력용) ---- */
+  #reportSheet { display: none; }
+  .rs-head { background: #152844; color: #fff; padding: 22px 26px; }
+  .rs-title { font-size: 21px; font-weight: bold; letter-spacing: .3px; }
+  .rs-sub { font-size: 11px; color: #aebccf; margin-top: 3px; }
+  .rs-body { padding: 22px 26px; }
+  #reportSheet table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  #reportSheet th, #reportSheet td {
+    border: 1px solid #c7c2b2; padding: 7px 10px; text-align: left;
+    vertical-align: top;
+  }
+  #reportSheet th { background: #ece8da; color: #152844; font-weight: bold; }
+  #reportSheet thead th { background: #152844; color: #fff; }
+  #reportSheet h3 {
+    font-size: 14px; color: #152844; margin: 20px 0 8px;
+    border-left: 3px solid #b58f4a; padding-left: 9px;
+  }
+  .rs-opinion { font-size: 12.5px; line-height: 1.75; margin: 0; }
+  .rs-foot {
+    margin-top: 24px; padding-top: 11px; border-top: 1px solid #c7c2b2;
+    font-size: 10.5px; color: #777; line-height: 1.6;
+  }
+
   @media print {
     .site-header nav, .chat-input, .quick, .hint,
     .filters, .kb-search, .calc-btn, .calc-btn2, .copy-btn { display: none; }
+    .site-header { position: static; box-shadow: none; }
     body { background: #fff; }
+    .tab { display: block !important; }
+    body.printing-report > *:not(#reportSheet) { display: none !important; }
+    body.printing-report #reportSheet { display: block !important; }
+    @page { margin: 14mm; }
   }
 </style>
 </head>
@@ -651,7 +679,7 @@
           </div>
           <button class="calc-btn" id="calcBtn">마진 변화 계산</button>
           <div class="calc-out" id="calcOut"></div>
-          <button class="calc-btn2" id="reportBtn" type="button">보고서 다운로드 (편집 가능)</button>
+          <button class="calc-btn2" id="reportBtn" type="button">보고서 PDF 저장 / 인쇄</button>
         </div>
       </div>
 
@@ -803,6 +831,9 @@
     </div>
   </div>
 </div>
+
+<!-- ===== 보고서 시트 (PDF 출력용 · 평소 숨김) ===== -->
+<div id="reportSheet"></div>
 
 <script>
 /* ============================================================
@@ -1635,97 +1666,79 @@ $("calcBtn").addEventListener("click", () => {
   $("reportBtn").classList.add("show");
 });
 
-/* ---- 편집 가능한 보고서(.rtf) 생성·다운로드 ---- */
-/* RTF는 한글·Polaris Office·Word 등 모든 워드프로세서에서 열어 편집 가능한
-   표준 문서 형식. 외부 라이브러리 없이 텍스트로 생성한다. */
-function rtfEsc(s) {
-  let o = "";
-  for (let i = 0; i < s.length; i++) {
-    const c = s.charCodeAt(i);
-    if (c === 92 || c === 123 || c === 125) o += "\\" + s[i]; // \ { }
-    else if (c >= 32 && c < 127) o += s[i];
-    else { let u = c; if (u > 32767) u -= 65536; o += "\\u" + u + "?"; }
-  }
-  return o;
-}
-
-function downloadReport(v, r) {
+/* ---- 보고서 PDF 출력 (브라우저 인쇄 → PDF 저장, 의존성 없음) ---- */
+function printReport(v, r) {
   const d = new Date();
   const ds = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-` +
     `${String(d.getDate()).padStart(2, "0")}`;
   const company = v.company || "기업명 미입력";
+  const e = escapeHtml;
   const sgn = n => (n >= 0 ? "+" : "");
-  const P = "\\par\n";
-  const gap = "\\fs10" + P + "\\fs22";
-  const meta = (k, val) => "\\b " + rtfEsc(k) + "\\b0  " + rtfEsc(val) + P;
-  const sec = t => "\\b\\fs28\\cf1 " + rtfEsc(t) + "\\cf0\\fs22\\b0" + P;
-  const kv = (k, val) => rtfEsc("  · ") + "\\b " + rtfEsc(k) + "\\b0  " +
-    rtfEsc(val) + P;
-  const cmp = (k, a, b, c) =>
-    kv(k, "현재 " + a + "  /  시나리오 " + b + "  /  차이 " + c);
 
-  let body = "";
-  body += "\\qc\\b\\fs40\\cf1 " + rtfEsc("관세율 변동 영향 분석 보고서") +
-    "\\b0\\cf0\\fs17\\cf2 " + P;
-  body += rtfEsc("Tariff Impact Analysis Report   ·   TradeGuide v2") +
-    "\\cf0\\fs22" + P + "\\ql" + gap;
-  body += meta("작성 기업:", company);
-  body += meta("품목:", (v.product || "-") + (v.hs ? " (HS " + v.hs + ")" : ""));
-  body += meta("작성일:", ds);
-  body += gap;
+  const spec = [
+    ["수출 물량", intc(v.qty) + " 개"],
+    ["수출 단가", usd(v.price)],
+    ["단위당 제조원가", v.cost > 0 ? usd(v.cost) : "미입력"],
+    ["단위당 물류비", usd(v.freight)],
+    ["현재 관세율", v.cur + " %"],
+    ["시나리오 관세율", v.scn + " %"],
+    ["적용 환율", intc(v.fx) + " 원/달러"],
+  ].map(x => `<tr><th style="width:38%">${x[0]}</th><td>${x[1]}</td></tr>`).join("");
 
-  body += sec("1. 입력 명세");
-  body += kv("수출 물량", intc(v.qty) + " 개");
-  body += kv("수출 단가", usd(v.price));
-  body += kv("단위당 제조원가", v.cost > 0 ? usd(v.cost) : "미입력");
-  body += kv("단위당 물류비", usd(v.freight));
-  body += kv("현재 관세율", v.cur + " %");
-  body += kv("시나리오 관세율", v.scn + " %");
-  body += kv("적용 환율", intc(v.fx) + " 원/달러");
-  body += gap;
-
-  body += sec("2. 분석 결과");
-  body += cmp("단위당 관세 (USD)", usd(r.curDutyU), usd(r.scnDutyU),
+  const rr = (k, a, b, c) =>
+    `<tr><td>${k}</td><td>${a}</td><td>${b}</td><td>${c}</td></tr>`;
+  let res = "";
+  res += rr("단위당 관세 (USD)", usd(r.curDutyU), usd(r.scnDutyU),
     sgn(r.deltaDutyU) + usd(r.deltaDutyU));
-  body += cmp("단위당 수입원가 (KRW)", won(r.curLandedU * v.fx),
-    won(r.scnLandedU * v.fx), sgn(r.deltaDutyU) + won(r.deltaDutyU * v.fx));
-  body += cmp("총 관세 부담 (KRW)", won(r.totalCurDutyKRW), won(r.totalScnDutyKRW),
+  res += rr("단위당 수입원가 (KRW)", won(r.curLandedU * v.fx), won(r.scnLandedU * v.fx),
+    sgn(r.deltaDutyU) + won(r.deltaDutyU * v.fx));
+  res += rr("총 관세 부담 (KRW)", won(r.totalCurDutyKRW), won(r.totalScnDutyKRW),
     sgn(r.totalDeltaKRW) + won(r.totalDeltaKRW));
   if (r.hasMargin) {
-    body += cmp("단위 마진 (USD)", usd(r.curMarginU), usd(r.scnMarginU),
+    res += rr("단위 마진 (USD)", usd(r.curMarginU), usd(r.scnMarginU),
       sgn(r.scnMarginU - r.curMarginU) + usd(r.scnMarginU - r.curMarginU));
-    body += cmp("마진율", r.curMarginPct.toFixed(1) + "%",
-      r.scnMarginPct.toFixed(1) + "%",
+    res += rr("마진율", r.curMarginPct.toFixed(1) + "%", r.scnMarginPct.toFixed(1) + "%",
       sgn(r.scnMarginPct - r.curMarginPct) +
       (r.scnMarginPct - r.curMarginPct).toFixed(1) + "%p");
   }
-  body += gap;
 
-  body += sec("3. 분석 의견");
-  body += rtfEsc(calcOpinion(v, r)) + P + gap;
+  $("reportSheet").innerHTML =
+    `<div class="rs-head">
+       <div class="rs-title">관세율 변동 영향 분석 보고서</div>
+       <div class="rs-sub">Tariff Impact Analysis Report · TradeGuide v2</div>
+     </div>
+     <div class="rs-body">
+       <table>
+         <tr><th style="width:18%">작성 기업</th><td style="width:42%">${e(company)}</td>
+             <th style="width:18%">작성일</th><td>${ds}</td></tr>
+         <tr><th>품목</th><td colspan="3">${e(v.product || "-")}` +
+         `${v.hs ? " (HS " + e(v.hs) + ")" : ""}</td></tr>
+       </table>
+       <h3>1. 입력 명세</h3>
+       <table><tbody>${spec}</tbody></table>
+       <h3>2. 분석 결과</h3>
+       <table>
+         <thead><tr><th>구분</th><th>현재</th><th>시나리오</th><th>차이</th></tr></thead>
+         <tbody>${res}</tbody>
+       </table>
+       <h3>3. 분석 의견</h3>
+       <p class="rs-opinion">${e(calcOpinion(v, r))}</p>
+       <div class="rs-foot">
+         ※ 본 보고서는 단순 산술 모델 기반 추정치이며, 실제 거래에는 부가세·원산지
+         규정·계약 조건(관세 부담 주체 등)이 추가로 반영되어야 합니다.<br>
+         생성: TradeGuide v2 — WTO TRIPS·한미 통상법 RAG 시스템 · 작성일 ${ds}
+       </div>
+     </div>`;
 
-  body += "\\fs17\\cf2 " + rtfEsc("※ 본 보고서는 단순 산술 모델 기반 추정치이며, " +
-    "실제 거래에는 부가세·원산지 규정·계약 조건(관세 부담 주체 등)이 추가로 " +
-    "반영되어야 합니다.") + P;
-  body += rtfEsc("생성: TradeGuide v2 — WTO TRIPS·한미 통상법 RAG 시스템 · " +
-    ds) + "\\cf0" + P;
-
-  const rtf = "{\\rtf1\\ansi\\ansicpg949\\deff0\\uc1\n" +
-    "{\\fonttbl{\\f0\\fnil Malgun Gothic;}}\n" +
-    "{\\colortbl;\\red21\\green40\\blue68;\\red120\\green120\\blue120;}\n" +
-    "\\viewkind4\\f0\\fs22\n" + body + "}";
-
-  const blob = new Blob([rtf], { type: "application/rtf" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = `관세영향분석_${company}_${ds}.rtf`;
-  document.body.appendChild(a);
-  a.click();
-  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+  document.body.classList.add("printing-report");
+  const cleanup = () => document.body.classList.remove("printing-report");
+  window.addEventListener("afterprint", cleanup, { once: true });
+  setTimeout(() => window.print(), 80);
+  setTimeout(cleanup, 60000);
 }
 
 $("reportBtn").addEventListener("click", () => {
-  if (lastReport) downloadReport(lastReport.v, lastReport.r);
+  if (lastReport) printReport(lastReport.v, lastReport.r);
 });
 
 /* ---------- 15. 지식 베이스 ---------- */
