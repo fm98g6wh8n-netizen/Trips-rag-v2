@@ -31,45 +31,50 @@
       Roboto, "Helvetica Neue", Arial, sans-serif;
     line-height: 1.6;
     font-size: 15px;
+    -webkit-text-size-adjust: 100%;
   }
   .serif {
     font-family: "Nanum Myeongjo", "Apple SD Gothic Neo", Batang,
       "Times New Roman", serif;
   }
+  svg { display: block; }
 
   /* ---- 헤더 ---- */
   .site-header {
     background: var(--panel);
     border-bottom: 1px solid var(--line);
+    box-shadow: 0 1px 4px rgba(21,40,68,.05);
     padding: 12px 20px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     flex-wrap: wrap;
     gap: 10px;
+    position: sticky; top: 0; z-index: 20;
   }
-  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand { display: flex; align-items: center; gap: 11px; }
   .brand .mark {
-    width: 38px; height: 38px;
+    width: 40px; height: 40px;
     background: var(--navy);
-    border-radius: 4px;
+    border-radius: 5px;
     display: flex; align-items: center; justify-content: center;
   }
-  .brand .mark svg { width: 22px; height: 22px; }
+  .brand .mark svg { width: 23px; height: 23px; }
   .brand .txt b {
     font-size: 18px; color: var(--navy);
-    display: block; line-height: 1.2;
+    display: block; line-height: 1.25; letter-spacing: .2px;
   }
   .brand .txt span { font-size: 11.5px; color: var(--ink-3); }
-  nav.tabs { display: flex; gap: 4px; flex-wrap: wrap; }
+  nav.tabs { display: flex; gap: 2px; flex-wrap: wrap; }
   nav.tabs a {
-    padding: 7px 13px;
+    padding: 8px 14px;
     font-size: 13.5px;
     color: var(--ink-2);
     cursor: pointer;
     border-radius: 3px;
     border-bottom: 2px solid transparent;
     user-select: none;
+    transition: color .12s;
   }
   nav.tabs a:hover { color: var(--navy); }
   nav.tabs a.active {
@@ -77,63 +82,64 @@
     border-bottom-color: var(--gold);
   }
 
-  main { max-width: 1080px; margin: 0 auto; padding: 22px 18px 70px; }
+  main { max-width: 1080px; margin: 0 auto; padding: 22px 18px 60px; }
   .tab { display: none; }
   .tab.active { display: block; }
 
   /* ---- 페이지 배너 ---- */
   .banner {
-    background: var(--navy);
+    background: linear-gradient(135deg, var(--navy), var(--navy-l));
     color: #fff;
-    border-radius: 6px;
-    padding: 26px 24px;
+    border-radius: 7px;
+    padding: 28px 26px;
     margin-bottom: 20px;
   }
-  .banner h1 {
-    margin: 0 0 6px; font-size: 25px;
-  }
+  .banner h1 { margin: 0 0 6px; font-size: 26px; letter-spacing: .3px; }
   .banner p { margin: 0; color: #c4cedd; font-size: 13.5px; }
   .banner .accent {
-    width: 44px; height: 3px; background: var(--gold);
-    margin-bottom: 14px;
+    width: 46px; height: 3px; background: var(--gold);
+    margin-bottom: 15px;
   }
 
-  /* ---- 홈: 그리드 ---- */
+  /* ---- 홈 그리드 ---- */
   .home-grid {
     display: grid;
-    grid-template-columns: 1.4fr 1fr;
+    grid-template-columns: 1.45fr 1fr;
     gap: 16px;
   }
-
   .card {
     background: var(--panel);
     border: 1px solid var(--line);
-    border-radius: 6px;
+    border-radius: 7px;
     overflow: hidden;
+    box-shadow: 0 1px 5px rgba(21,40,68,.04);
   }
   .card-head {
     background: var(--navy);
     color: #fff;
     padding: 14px 16px;
-    display: flex; align-items: center; gap: 10px;
+    display: flex; align-items: center; gap: 11px;
   }
   .card-head .ic {
-    width: 30px; height: 30px; border-radius: 4px;
-    background: rgba(255,255,255,.12);
+    width: 32px; height: 32px; border-radius: 5px;
+    background: rgba(255,255,255,.1);
     display: flex; align-items: center; justify-content: center;
-    font-size: 15px;
   }
+  .card-head .ic svg { width: 18px; height: 18px; }
   .card-head b { font-size: 15px; display: block; }
   .card-head small { color: #aebccf; font-size: 11px; }
+  .card-head .status {
+    margin-left: auto; display: flex; align-items: center; gap: 5px;
+    font-size: 10.5px; color: #aebccf;
+  }
   .card-head .dot {
-    width: 8px; height: 8px; border-radius: 50%;
-    background: #57b368; margin-left: auto;
+    width: 7px; height: 7px; border-radius: 50%; background: #57b368;
   }
 
   /* ---- 채팅 ---- */
   .chat-body {
     padding: 14px;
-    max-height: 430px;
+    height: 430px;
     overflow-y: auto;
     background: #fbfaf6;
   }
@@ -141,16 +147,15 @@
   .msg.user { align-items: flex-end; }
   .msg.bot { align-items: flex-start; }
   .bubble {
-    max-width: 92%;
-    padding: 11px 13px;
-    border-radius: 8px;
+    max-width: 93%;
+    padding: 12px 14px;
+    border-radius: 9px;
     font-size: 14px;
     white-space: pre-wrap;
     word-break: break-word;
   }
   .msg.user .bubble {
-    background: var(--navy);
-    color: #fff;
+    background: var(--navy); color: #fff;
     border-bottom-right-radius: 2px;
   }
   .msg.bot .bubble {
@@ -163,7 +168,7 @@
   .msg .time { font-size: 10.5px; color: var(--ink-3); margin-top: 3px; }
 
   .ans-text { white-space: pre-wrap; }
-  .badges { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 5px; }
+  .badges { margin-top: 11px; display: flex; flex-wrap: wrap; gap: 5px; }
   .badge {
     display: inline-block; padding: 3px 9px;
     border-radius: 3px; font-size: 11.5px;
@@ -173,16 +178,16 @@
   .badge.warn { background: var(--warn-bg); border-color: var(--warn); color: var(--warn); }
   .badge.dom { background: #eef1f6; border-color: #c9d3e2; color: var(--navy); }
   .warnbox {
-    margin-top: 8px; padding: 8px 10px;
+    margin-top: 9px; padding: 9px 11px;
     background: var(--warn-bg); border: 1px solid var(--warn);
-    border-radius: 3px; font-size: 12.5px; color: #6e2018;
+    border-radius: 4px; font-size: 12.5px; color: #6e2018;
   }
   .warnbox ul { margin: 4px 0 0; padding-left: 16px; }
   details.disc {
     margin-top: 8px;
     border: 1px solid var(--line-2);
-    border-radius: 3px; background: #faf9f4;
-    padding: 6px 9px;
+    border-radius: 4px; background: #faf9f4;
+    padding: 7px 10px;
   }
   details.disc > summary {
     cursor: pointer; font-size: 12px; color: var(--ink-2);
@@ -190,8 +195,8 @@
   }
   details.disc[open] > summary { color: var(--navy); font-weight: bold; }
   .srcrow {
-    margin-top: 7px; padding: 7px 9px;
-    border: 1px solid var(--line-2); border-radius: 3px;
+    margin-top: 7px; padding: 8px 10px;
+    border: 1px solid var(--line-2); border-radius: 4px;
     background: #fff; font-size: 12px;
   }
   .srcrow .st { font-weight: bold; color: var(--navy); font-size: 12.5px; }
@@ -208,32 +213,42 @@
   }
   .decomp-log ol { margin: 5px 0 0 16px; padding: 0; }
   .decomp-log li { margin-top: 5px; }
+  .copy-btn {
+    margin-top: 10px; display: inline-flex; align-items: center; gap: 5px;
+    background: #fff; border: 1px solid var(--line);
+    color: var(--ink-2); font-size: 11.5px; font-family: inherit;
+    padding: 5px 10px; border-radius: 4px; cursor: pointer;
+  }
+  .copy-btn:hover { border-color: var(--navy); color: var(--navy); }
+  .copy-btn svg { width: 13px; height: 13px; }
 
   .chat-input {
     display: flex; gap: 8px; padding: 12px;
     border-top: 1px solid var(--line); background: #fff;
   }
   .chat-input textarea {
-    flex: 1; resize: none; height: 42px;
-    border: 1px solid var(--line); border-radius: 4px;
-    padding: 9px 10px; font-family: inherit; font-size: 14px;
+    flex: 1; resize: none; height: 44px;
+    border: 1px solid var(--line); border-radius: 5px;
+    padding: 10px 11px; font-family: inherit; font-size: 14px;
     color: var(--ink);
   }
   .chat-input textarea:focus { outline: 1px solid var(--navy); }
   .send-btn {
     background: var(--navy); color: #fff; border: none;
-    width: 46px; border-radius: 4px; cursor: pointer; font-size: 16px;
+    width: 48px; border-radius: 5px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
   }
   .send-btn:hover { background: var(--navy-d); }
+  .send-btn svg { width: 18px; height: 18px; }
   .hint { font-size: 11px; color: var(--ink-3); padding: 0 12px 10px; }
   .quick {
     display: flex; flex-wrap: wrap; gap: 6px;
-    padding: 0 12px 12px;
+    padding: 0 12px 13px;
   }
   .quick .q {
     border: 1px dashed var(--line); background: #faf9f4;
     color: var(--ink-2); font-size: 11.5px;
-    padding: 5px 9px; border-radius: 3px; cursor: pointer;
+    padding: 6px 10px; border-radius: 4px; cursor: pointer;
   }
   .quick .q:hover { border-style: solid; border-color: var(--navy); color: var(--navy); }
 
@@ -246,33 +261,52 @@
   }
   .field input, .field select {
     width: 100%; padding: 9px 10px;
-    border: 1px solid var(--line); border-radius: 4px;
+    border: 1px solid var(--line); border-radius: 5px;
     font-family: inherit; font-size: 14px; background: #fbfaf6;
     color: var(--ink);
   }
   .field input:focus, .field select:focus { outline: 1px solid var(--navy); }
   .calc-btn {
     width: 100%; background: var(--navy); color: #fff;
-    border: none; padding: 11px; border-radius: 4px;
+    border: none; padding: 11px; border-radius: 5px;
     font-family: inherit; font-size: 14px; cursor: pointer;
     margin-top: 4px;
   }
   .calc-btn:hover { background: var(--navy-d); }
   .calc-out {
-    margin-top: 14px; padding: 12px;
-    border: 1px solid var(--line); border-radius: 4px;
-    background: #fbfaf6; font-size: 13px; white-space: pre-wrap;
+    margin-top: 14px; padding: 13px;
+    border: 1px solid var(--line); border-radius: 5px;
+    background: #fbfaf6; font-size: 13px;
     display: none;
   }
   .calc-out.show { display: block; }
+  .calc-out .otext { white-space: pre-wrap; }
   .calc-out .big {
     font-size: 17px; color: var(--navy); font-weight: bold;
-    display: block; margin: 6px 0;
+    display: block; margin: 8px 0 4px;
+  }
+  .cmp-bars { margin-top: 12px; }
+  .bar-row {
+    display: flex; align-items: center; gap: 8px;
+    margin-top: 7px; font-size: 11.5px;
+  }
+  .bar-row .bl { width: 96px; color: var(--ink-2); flex-shrink: 0; }
+  .bar-track {
+    flex: 1; height: 16px; background: #ebe7da;
+    border-radius: 3px; overflow: hidden;
+  }
+  .bar-track .bar {
+    height: 100%; background: var(--navy-l); border-radius: 3px;
+  }
+  .bar-track .bar.alt { background: var(--gold); }
+  .bar-row .bv {
+    width: 92px; text-align: right; flex-shrink: 0;
+    font-family: ui-monospace, Menlo, monospace; color: var(--navy);
   }
 
   /* ---- 지식 베이스 ---- */
   .kb-search {
-    width: 100%; padding: 11px 14px; font-size: 14px;
+    width: 100%; padding: 12px 14px; font-size: 14px;
     border: 1px solid var(--line); border-radius: 5px;
     background: var(--panel); font-family: inherit; color: var(--ink);
     margin-bottom: 12px;
@@ -282,7 +316,7 @@
   .filters .chip {
     border: 1px solid var(--line); background: #fff;
     color: var(--ink-2); font-size: 12.5px;
-    padding: 6px 13px; border-radius: 3px; cursor: pointer;
+    padding: 6px 14px; border-radius: 3px; cursor: pointer;
   }
   .filters .chip.active { background: var(--navy); color: #fff; border-color: var(--navy); }
   .kb-count { font-size: 12.5px; color: var(--ink-3); margin: 4px 0 14px; }
@@ -291,24 +325,24 @@
   }
   .kb-card {
     background: var(--panel); border: 1px solid var(--line);
-    border-top: 3px solid var(--navy-l); border-radius: 5px;
-    padding: 14px; cursor: pointer;
+    border-top: 3px solid var(--navy-l); border-radius: 6px;
+    padding: 15px; display: flex; flex-direction: column;
   }
   .kb-card.cat-판례 { border-top-color: #9c3b32; }
   .kb-card.cat-협정 { border-top-color: var(--gold); }
   .kb-card .kh {
     display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 6px;
+    margin-bottom: 5px;
   }
   .kb-card .kname { font-weight: bold; color: var(--navy); font-size: 15px; }
   .kb-card .kcat {
     font-size: 10.5px; border: 1px solid var(--line);
-    padding: 1px 7px; border-radius: 2px; color: var(--ink-2);
+    padding: 1px 8px; border-radius: 2px; color: var(--ink-2);
   }
-  .kb-card .kdate { font-size: 11px; color: var(--ink-3); margin-bottom: 6px; }
+  .kb-card .kdate { font-size: 11px; color: var(--ink-3); margin-bottom: 7px; }
   .kb-card .ktitle { font-size: 13.5px; font-weight: bold; margin-bottom: 2px; }
-  .kb-card .kten { font-size: 11.5px; color: var(--ink-3); margin-bottom: 8px; }
-  .kb-card .ktags { margin-bottom: 8px; }
+  .kb-card .kten { font-size: 11.5px; color: var(--ink-3); margin-bottom: 9px; }
+  .kb-card .ktags { margin-bottom: 9px; }
   .kb-card .ktags span {
     display: inline-block; font-size: 10.5px;
     background: #eef1f6; color: var(--navy);
@@ -316,28 +350,39 @@
   }
   .kb-card .kdesc { font-size: 12.5px; color: var(--ink-2); }
   .kb-card .kfull {
-    display: none; margin-top: 8px; padding-top: 8px;
+    display: none; margin-top: 9px; padding-top: 9px;
     border-top: 1px dashed var(--line); font-size: 12.5px; color: var(--ink-2);
   }
   .kb-card.open .kfull { display: block; }
-  .kb-card .kmore { font-size: 11px; color: var(--gold); margin-top: 6px; }
+  .kb-card .kactions {
+    margin-top: auto; padding-top: 10px;
+    display: flex; gap: 7px; flex-wrap: wrap;
+  }
+  .kb-card .ka {
+    font-size: 11px; font-family: inherit; cursor: pointer;
+    padding: 5px 10px; border-radius: 4px; border: 1px solid var(--line);
+    background: #fff; color: var(--ink-2);
+  }
+  .kb-card .ka.primary { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .kb-card .ka:hover { border-color: var(--navy); }
+  .kb-card .ka.primary:hover { background: var(--navy-d); }
   .kb-empty { color: var(--ink-3); font-size: 13px; padding: 20px 0; }
 
   /* ---- 정보 페이지 ---- */
-  .sec-title {
-    font-size: 21px; color: var(--navy); margin: 26px 0 4px;
-  }
-  .sec-rule { width: 40px; height: 3px; background: var(--gold); margin-bottom: 14px; }
+  .sec-title { font-size: 21px; color: var(--navy); margin: 26px 0 4px; }
+  .sec-rule { width: 42px; height: 3px; background: var(--gold); margin-bottom: 14px; }
   .info-box {
     background: var(--panel); border: 1px solid var(--line);
-    border-radius: 6px; padding: 18px; margin-bottom: 14px;
+    border-radius: 7px; padding: 18px; margin-bottom: 14px;
   }
+  .info-box > p:first-child { margin-top: 0; }
   .info-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
   .mini {
     border: 1px solid var(--line); border-top: 3px solid var(--navy);
-    border-radius: 5px; padding: 13px; background: #fbfaf6;
+    border-radius: 6px; padding: 14px; background: #fbfaf6;
   }
-  .mini .mi { font-size: 18px; margin-bottom: 6px; }
+  .mini .mi { margin-bottom: 8px; }
+  .mini .mi svg { width: 25px; height: 25px; }
   .mini b { color: var(--navy); display: block; margin-bottom: 4px; font-size: 13.5px; }
   .mini p { margin: 0; font-size: 12px; color: var(--ink-2); }
 
@@ -345,7 +390,7 @@
   .step {
     display: flex; gap: 14px; align-items: flex-start;
     background: var(--panel); border: 1px solid var(--line);
-    border-left: 3px solid var(--navy); border-radius: 5px;
+    border-left: 3px solid var(--navy); border-radius: 6px;
     padding: 13px 15px;
   }
   .step .n {
@@ -355,14 +400,15 @@
   }
   .step b { color: var(--navy); font-size: 14px; }
   .step p { margin: 3px 0 0; font-size: 12.5px; color: var(--ink-2); }
-  .arrow { text-align: center; color: var(--line); font-size: 14px; margin: 3px 0; }
+  .arrow { display: flex; justify-content: center; margin: 3px 0; }
+  .arrow svg { width: 16px; height: 16px; stroke: #c9c3b0; }
 
   table.cmp {
     width: 100%; border-collapse: collapse; font-size: 13px;
     background: var(--panel);
   }
   table.cmp th, table.cmp td {
-    border: 1px solid var(--line); padding: 8px 10px; text-align: left;
+    border: 1px solid var(--line); padding: 9px 11px; text-align: left;
     vertical-align: top;
   }
   table.cmp th { background: var(--navy); color: #fff; font-weight: bold; }
@@ -378,12 +424,70 @@
   }
   footer.note b { color: var(--ink-2); }
 
+  /* ---- 설정 모달 / AI 모드 ---- */
+  .gear {
+    background: #fff; border: 1px solid var(--line);
+    border-radius: 4px; cursor: pointer; padding: 6px;
+    display: flex; align-items: center;
+  }
+  .gear:hover { border-color: var(--navy); }
+  .gear svg { width: 17px; height: 17px; }
+  .modal-bg {
+    display: none; position: fixed; inset: 0; z-index: 50;
+    background: rgba(15,29,51,.55);
+    align-items: center; justify-content: center; padding: 18px;
+  }
+  .modal-bg.show { display: flex; }
+  .modal {
+    background: var(--panel); border-radius: 7px;
+    max-width: 440px; width: 100%; overflow: hidden;
+  }
+  .modal-head {
+    background: var(--navy); color: #fff; padding: 14px 16px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .modal-head b { font-size: 15px; }
+  .modal-head .x {
+    cursor: pointer; color: #aebccf; font-size: 16px;
+    background: none; border: none;
+  }
+  .modal-body { padding: 16px; }
+  .modal-body .note {
+    font-size: 11.5px; color: var(--ink-3); line-height: 1.55;
+    background: #faf9f4; border: 1px solid var(--line-2);
+    border-radius: 4px; padding: 9px 11px; margin-top: 6px;
+  }
+  .switch-row {
+    display: flex; align-items: center; justify-content: space-between;
+    margin: 13px 0 4px;
+  }
+  .switch-row label { font-size: 13px; color: var(--ink-2); }
+  .modal-actions { display: flex; gap: 8px; margin-top: 14px; }
+  .modal-actions button {
+    flex: 1; padding: 9px; border-radius: 4px; cursor: pointer;
+    font-family: inherit; font-size: 13px;
+  }
+  .btn-save { background: var(--navy); color: #fff; border: 1px solid var(--navy); }
+  .btn-save:hover { background: var(--navy-d); }
+  .btn-clear { background: #fff; color: var(--warn); border: 1px solid var(--line); }
+  .btn-clear:hover { border-color: var(--warn); }
+  .gen { color: var(--ink-3); font-style: italic; }
+  .badge.mode { background: #2a3a55; border-color: #2a3a55; color: #fff; }
+
   @media (max-width: 760px) {
     .home-grid { grid-template-columns: 1fr; }
     .info-3 { grid-template-columns: 1fr; }
     .kb-grid { grid-template-columns: 1fr; }
     .banner h1 { font-size: 21px; }
     .brand .txt b { font-size: 16px; }
+    nav.tabs a { padding: 7px 10px; }
+  }
+  @media print {
+    .site-header nav, .chat-input, .quick, .hint,
+    .filters, .kb-search, .calc-btn, .copy-btn { display: none; }
+    .site-header { position: static; box-shadow: none; }
+    body { background: #fff; }
+    .tab { display: block !important; }
   }
 </style>
 </head>
@@ -392,8 +496,12 @@
 <header class="site-header">
   <div class="brand">
     <div class="mark">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#b58f4a" stroke-width="1.6">
-        <path d="M12 3v18M5 21h14M12 6l-7 2 7-2 7 2-7-2M5 8l-2.5 5a3 3 0 0 0 5 0L5 8zM19 8l-2.5 5a3 3 0 0 0 5 0L19 8z"/>
+      <svg viewBox="0 0 24 24" fill="none" stroke="#b58f4a" stroke-width="1.5"
+           stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 3v18M5 21h14"/>
+        <path d="M12 6 5 8l7-2 7 2-7-2"/>
+        <path d="M5 8 2.6 13a3 3 0 0 0 4.8 0L5 8Z"/>
+        <path d="M19 8l-2.4 5a3 3 0 0 0 4.8 0L19 8Z"/>
       </svg>
     </div>
     <div class="txt">
@@ -401,12 +509,21 @@
       <span>WTO TRIPS · 한미 통상법 RAG 검색·검증 시스템</span>
     </div>
   </div>
-  <nav class="tabs" id="nav">
-    <a data-tab="home" class="active">홈</a>
-    <a data-tab="kb">지식 베이스</a>
-    <a data-tab="how">AI 구동 원리</a>
-    <a data-tab="arch">시스템 아키텍처</a>
-  </nav>
+  <div style="display:flex;align-items:center;gap:6px">
+    <nav class="tabs" id="nav">
+      <a data-tab="home" class="active">홈</a>
+      <a data-tab="kb">지식 베이스</a>
+      <a data-tab="how">AI 구동 원리</a>
+      <a data-tab="arch">시스템 아키텍처</a>
+    </nav>
+    <button class="gear" id="gearBtn" aria-label="AI 설정">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#152844" stroke-width="1.6"
+           stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3.1"/>
+        <path d="M19.4 13a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7 1.1V21a2 2 0 0 1-4 0v-.2a1.6 1.6 0 0 0-2.7-1.1l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.6 1.6 0 0 0 4.6 13H4a2 2 0 0 1 0-4h.2a1.6 1.6 0 0 0 1.1-2.7l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.6 1.6 0 0 0 11 4.6V4a2 2 0 0 1 4 0v.2a1.6 1.6 0 0 0 2.7 1.1l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V9a1.6 1.6 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.6a1.6 1.6 0 0 0-1 .9Z"/>
+      </svg>
+    </button>
+  </div>
 </header>
 
 <main>
@@ -417,23 +534,33 @@
       <!-- 채팅 상담 -->
       <div class="card">
         <div class="card-head">
-          <div class="ic">💬</div>
+          <div class="ic">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 11.5a8.4 8.4 0 0 1-12.3 7.4L3 21l2.1-5.7A8.4 8.4 0 1 1 21 11.5Z"/>
+            </svg>
+          </div>
           <div>
             <b>법규 상담</b>
             <small>RAG 기반 어시스턴트 · Agentic 검색 + 자체 검증</small>
           </div>
-          <div class="dot"></div>
+          <div class="status" id="chatStatus"><span class="dot"></span>룰 기반 모드</div>
         </div>
         <div class="chat-body" id="chatBody"></div>
         <div class="chat-input">
           <textarea id="chatInput" placeholder="법규 검색·비교 분석을 질문해 주세요 (Enter 전송, Shift+Enter 줄바꿈)"></textarea>
-          <button class="send-btn" id="sendBtn" title="전송">➤</button>
+          <button class="send-btn" id="sendBtn" aria-label="전송">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7Z"/>
+            </svg>
+          </button>
         </div>
         <div class="hint">Enter 키로 전송 · 답변마다 출처(Top-3 점수)와 신뢰도 검증이 함께 표시됩니다</div>
         <div class="quick" id="quick">
           <div class="q" data-q="반도체에서 강제실시권은 어떤 경우에 허용되는가?">반도체 강제실시권은?</div>
           <div class="q" data-q="무역법 301조가 무엇인가요?">무역법 301조가 무엇인가요?</div>
-          <div class="q" data-q="TRIPS 제31조와 제38조의 보호기간 차이를 비교해줘">제31조와 제38조 비교</div>
+          <div class="q" data-q="TRIPS 제33조와 제38조의 보호기간 차이를 비교해줘">제33조와 제38조 비교</div>
           <div class="q" data-q="IEEPA 위헌 판결 내용은 무엇인가요?">IEEPA 위헌 판결은?</div>
         </div>
       </div>
@@ -441,7 +568,14 @@
       <!-- 관세 시나리오 계산기 -->
       <div class="card">
         <div class="card-head">
-          <div class="ic">🧮</div>
+          <div class="ic">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <rect x="5" y="3" width="14" height="18" rx="2"/>
+              <path d="M8 7h8"/>
+              <path d="M8 12h0M12 12h0M16 12h0M8 16h0M12 16h0M16 16h0"/>
+            </svg>
+          </div>
           <div>
             <b>관세 시나리오 계산기</b>
             <small>관세율 변화에 따른 마진 영향 분석</small>
@@ -484,7 +618,7 @@
       <h1 class="serif">통상·지식재산 법규 지식 베이스</h1>
       <p>WTO TRIPS 협정과 한미 통상법 조항을 도메인·유형별로 탐색하고 검색하세요</p>
     </div>
-    <input type="text" class="kb-search" id="kbSearch" placeholder="법규 검색… (조항명·키워드·태그)" />
+    <input type="text" class="kb-search" id="kbSearch" placeholder="법규 검색 (조항명·키워드·태그)" />
     <div class="filters" id="kbFilters">
       <div class="chip active" data-cat="전체">전체</div>
       <div class="chip" data-cat="협정">협정</div>
@@ -506,51 +640,32 @@
     <h2 class="sec-title serif">RAG (Retrieval-Augmented Generation) 구조</h2>
     <div class="sec-rule"></div>
     <div class="info-box">
-      <p style="margin-top:0">
+      <p>
         TradeGuide v2는 답변을 지어내지 않습니다. 내장된 법규 문서를 먼저
         <b>검색(Retrieval)</b>한 뒤, 검색 결과만을 근거로 답변을 구성합니다.
         모든 답변에는 출처 조항과 TF-IDF 검색 점수가 함께 표시되어,
         사용자가 신뢰도를 직접 확인할 수 있습니다.
       </p>
-      <div class="info-3">
-        <div class="mini">
-          <div class="mi">🗄️</div>
-          <b>지식 베이스</b>
-          <p>WTO TRIPS 4개 조항 + 한미 통상법 3개 항목을 내부 데이터로 색인.</p>
-        </div>
-        <div class="mini">
-          <div class="mi">🔍</div>
-          <b>TF-IDF 검색</b>
-          <p>한국어 형태소 분리·동의어 확장 후 코사인 유사도로 Top-3 추출, 도메인 가중치 적용.</p>
-        </div>
-        <div class="mini">
-          <div class="mi">📝</div>
-          <b>룰 기반 답변</b>
-          <p>검색된 원문을 룰 템플릿으로 종합. LLM 환각 없이 출처에 고정된 답변.</p>
-        </div>
-      </div>
+      <div class="info-3" id="howRag"></div>
     </div>
 
     <h2 class="sec-title serif">2차 버전의 핵심 — Agentic + 자체 검증</h2>
     <div class="sec-rule"></div>
     <div class="info-box">
-      <div class="info-3">
-        <div class="mini">
-          <div class="mi">🧩</div>
-          <b>질문 분해</b>
-          <p>조항 번호가 여럿이거나 "비교/차이"가 포함되면 하위 질문으로 분해해 각각 검색합니다.</p>
-        </div>
-        <div class="mini">
-          <div class="mi">🔗</div>
-          <b>다중 검색·통합</b>
-          <p>하위 질문마다 별도 Top-3 검색 후 결과를 병합해 통합 답변을 생성합니다.</p>
-        </div>
-        <div class="mini">
-          <div class="mi">🛡️</div>
-          <b>3유형 자체 검증</b>
-          <p>개념 대체·도메인 혼동·기간 혼동 오류를 검사해 신뢰도 ★★★ / ★★를 표시합니다.</p>
-        </div>
-      </div>
+      <div class="info-3" id="howAgentic"></div>
+    </div>
+
+    <h2 class="sec-title serif">선택 기능 — LLM 생성 답변 모드</h2>
+    <div class="sec-rule"></div>
+    <div class="info-box">
+      <p>
+        기본 답변은 룰 기반 템플릿이지만, 헤더의 설정(톱니바퀴)에서 사용자 본인의
+        Anthropic API 키를 입력하면 검색된 법규 원문을 근거로 LLM이 답변을 생성하는
+        모드를 켤 수 있습니다. 이 경우에도 검색(Retrieval)은 동일한 TF-IDF 엔진이
+        수행하며, 생성된 답변은 같은 3유형 검증 레이어를 거칩니다 — LLM이 환각을
+        일으키면 신뢰도 ★★ 경고로 즉시 드러납니다. API 키는 서버가 아닌 사용자
+        브라우저에만 저장되며, 키가 없으면 룰 기반 모드로 동작합니다.
+      </p>
     </div>
   </section>
 
@@ -573,6 +688,7 @@
       <tr><td>검색</td><td>단일 검색, 복합 질문 분해 불가</td><td>질문 분해 → 다중 검색 → 통합 답변</td></tr>
       <tr><td>오류 검출</td><td>도메인 혼동 등 미검출</td><td>개념대체·도메인혼동·기간혼동 3유형 자체 검증</td></tr>
       <tr><td>검색 점수</td><td>비공개로 신뢰도 판단 불가</td><td>Top-3 결과마다 TF-IDF 점수 공개</td></tr>
+      <tr><td>지식 범위</td><td>한미 통상법 중심</td><td>WTO TRIPS 협정 + 한미 통상법 통합</td></tr>
       <tr><td>배포</td><td>서버 기반 프리뷰 환경</td><td>단일 HTML · GitHub Pages 정적 배포</td></tr>
     </table>
 
@@ -593,20 +709,60 @@
 <footer class="note">
   <b>시스템 한계 안내.</b>
   본 시스템은 학생부종합전형 동아리 활동 산출물로, TF-IDF 기반 정적 검색과
-  룰 기반 답변 템플릿으로 구성됩니다. LLM 추론 능력은 없으며, 내장된
-  WTO TRIPS 4개 조항(제27·31·35–38·39)과 한미 통상법 3개 항목에 한해서만
-  응답합니다. 검증 레이어의 "신뢰도 ★★★"은 3개 휴리스틱 규칙 통과를
-  의미할 뿐 법적 정확성을 보증하지 않습니다. 관세 시나리오 계산기는
-  단순 산술 모델이며 실제 거래에는 운임·부가세·원산지 규정 등이 추가로
-  반영되어야 합니다. 실제 법률·통상 판단에는 원문 및 전문가 자문이 필요합니다.
+  룰 기반 답변 템플릿으로 구성됩니다. 기본 모드는 LLM 없이 동작하며, 설정에서
+  사용자 API 키를 입력하면 선택적으로 LLM 생성 답변을 쓸 수 있습니다(이 경우에도
+  동일한 3유형 검증을 거칩니다). 답변은 내장된 WTO TRIPS 협정 조항과 한미 통상법
+  항목 범위에서만 이뤄집니다.
+  검증 레이어의 "신뢰도 ★★★"은 3개 휴리스틱 규칙 통과를 의미할 뿐
+  법적 정확성을 보증하지 않습니다. 관세 시나리오 계산기는 단순 산술
+  모델이며 실제 거래에는 운임·부가세·원산지 규정 등이 추가로 반영되어야
+  합니다. 실제 법률·통상 판단에는 원문 및 전문가 자문이 필요합니다.
 </footer>
+
+<!-- ===== AI 설정 모달 ===== -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <div class="modal-head">
+      <b>AI 답변 설정</b>
+      <button class="x" id="modalX" type="button" aria-label="닫기">닫기</button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label for="mKey">Anthropic API 키</label>
+        <input type="password" id="mKey" placeholder="sk-ant-..." autocomplete="off" />
+      </div>
+      <div class="field">
+        <label for="mModel">모델</label>
+        <select id="mModel">
+          <option value="claude-opus-4-7">Claude Opus 4.7 — 최고 성능 · 고비용</option>
+          <option value="claude-sonnet-4-6">Claude Sonnet 4.6 — 균형</option>
+          <option value="claude-haiku-4-5">Claude Haiku 4.5 — 빠름 · 저비용</option>
+        </select>
+      </div>
+      <div class="switch-row">
+        <label for="mAi">AI 생성 답변 모드 사용</label>
+        <input type="checkbox" id="mAi" />
+      </div>
+      <div class="note">
+        API 키는 이 브라우저(localStorage)에만 저장되며 별도 서버로 전송되지
+        않습니다. 질문 시 키는 Anthropic API로만 직접 전송됩니다. 공용 기기에서는
+        사용 후 '키 삭제'를 눌러주세요. 키가 없거나 AI 모드가 꺼져 있으면 기존
+        TF-IDF 룰 기반 답변이 사용됩니다.
+      </div>
+      <div class="modal-actions">
+        <button class="btn-clear" id="mClear" type="button">키 삭제</button>
+        <button class="btn-save" id="mSave" type="button">저장</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
 /* ============================================================
  * TradeGuide v2 — single-file client-side RAG
  * ============================================================ */
 
-/* ---------- 1. 법규 데이터 (TRIPS 4 + 한미 통상법 3) ---------- */
+/* ---------- 1. 법규 데이터 (TRIPS 7 + 한미 통상법 3) ---------- */
 const CORPUS = [
   {
     docId: "art27", label: "TRIPS 27조", category: "협정", domain: "일반", date: "1995.01.01",
@@ -626,6 +782,21 @@ const CORPUS = [
                "non-obvious", "novelty", "각주5", "footnote", "27조"],
   },
   {
+    docId: "art28", label: "TRIPS 28조", category: "협정", domain: "일반", date: "1995.01.01",
+    title: "TRIPS 제28조 — 특허권자의 배타적 권리",
+    titleEn: "TRIPS Article 28 — Rights Conferred",
+    tags: ["협정", "TRIPS", "특허", "배타권"],
+    text:
+      "TRIPS 제28조: 특허권자는 제3자가 자신의 동의 없이 특허 대상을 실시하는 행위를 " +
+      "금지할 배타적 권리를 가진다. 물건 특허의 경우 제조·사용·판매를 위한 청약·판매·수입을, " +
+      "방법 특허의 경우 그 방법의 사용 및 그 방법으로 직접 얻은 물건의 처분을 금지할 수 있다. " +
+      "또한 특허권자는 특허권을 양도하거나 상속할 수 있으며, 실시권 계약(라이선스)을 " +
+      "체결할 수 있다.",
+    nums: [],
+    keywords: ["특허", "배타권", "배타적권리", "rights", "라이선스", "실시권",
+               "물건특허", "방법특허", "28조", "양도"],
+  },
+  {
     docId: "art31c", label: "TRIPS 31조(c)", category: "협정", domain: "반도체", date: "1995.01.01",
     title: "TRIPS 제31조(c) — 반도체 기술 강제실시권의 제한",
     titleEn: "TRIPS Article 31(c) — Compulsory Licensing for Semiconductors",
@@ -641,6 +812,20 @@ const CORPUS = [
     nums: [],
     keywords: ["반도체", "강제실시권", "compulsory", "licensing", "비상업적",
                "반경쟁", "anti-competitive", "31조", "31(c)", "공공의비상업적사용"],
+  },
+  {
+    docId: "art33", label: "TRIPS 33조", category: "협정", domain: "일반", date: "1995.01.01",
+    title: "TRIPS 제33조 — 특허의 존속기간",
+    titleEn: "TRIPS Article 33 — Term of Protection",
+    tags: ["협정", "TRIPS", "특허", "보호기간"],
+    text:
+      "TRIPS 제33조: 특허의 존속기간은 출원일(filing date)로부터 계산하여 최소 20년이다. " +
+      "이는 모든 회원국이 보장해야 하는 최소 기준이며, 각국은 그 이상으로 정할 수 있다. " +
+      "특허 20년은 집적회로 배치설계의 보호기간(제38조, 최소 10년)과 명확히 구별되는 " +
+      "별개의 기간이다. 두 기간을 혼동하는 것은 기간 혼동 오류에 해당한다.",
+    nums: [20, 10],
+    keywords: ["특허", "존속기간", "보호기간", "20년", "출원일", "filing", "term",
+               "33조", "최소기준"],
   },
   {
     docId: "art35_38", label: "TRIPS 35–38조", category: "협정", domain: "반도체", date: "1995.01.01",
@@ -677,7 +862,21 @@ const CORPUS = [
                "합리적조치", "39조", "3요건", "undisclosed"],
   },
   {
-    docId: "ieepa", label: "IEEPA", category: "판례", domain: "통상", date: "2026.02.20",
+    docId: "korusfta", label: "한미 FTA", category: "협정", domain: "통상", date: "2012.03.15",
+    title: "한미 자유무역협정 (KORUS FTA)",
+    titleEn: "Korea–US Free Trade Agreement",
+    tags: ["협정", "FTA", "한미", "관세"],
+    text:
+      "한미 자유무역협정(KORUS FTA)은 2012년 3월 15일 발효된 한국과 미국 간 자유무역협정이다. " +
+      "양국 간 교역 상품의 관세를 단계적으로 철폐·인하하고, 지식재산권·투자·서비스·정부조달 " +
+      "분야의 규범을 포함한다. 2018년 개정 협상을 거쳐 자동차 등 일부 분야의 조항이 수정되었다. " +
+      "FTA 특혜관세를 적용받으려면 원산지 기준을 충족하고 원산지 증명을 갖춰야 한다.",
+    nums: [],
+    keywords: ["한미fta", "korus", "자유무역협정", "fta", "관세철폐", "원산지",
+               "특혜관세", "지식재산권", "투자"],
+  },
+  {
+    docId: "ieepa", label: "IEEPA 판결", category: "판례", domain: "통상", date: "2026.02.20",
     title: "미국 연방대법원 IEEPA 관세 위법·무효 판결",
     titleEn: "Supreme Court IEEPA Tariff Ruling",
     tags: ["판례", "IEEPA", "위헌", "관세"],
@@ -728,16 +927,18 @@ const SYNONYMS = [
   ["반도체", "semi-conductor", "semiconductor", "집적회로", "ic"],
   ["배치설계", "layout-design", "layout", "topography", "토포그래피"],
   ["영업비밀", "trade secret", "undisclosed information", "미공개정보"],
-  ["보호기간", "protection term", "duration", "term"],
+  ["보호기간", "protection term", "duration", "term", "존속기간"],
   ["공공보건", "public health", "도하선언", "doha"],
   ["반경쟁", "anti-competitive", "anticompetitive", "반경쟁적"],
   ["특허", "patent", "특허권"],
   ["발명", "invention", "신규성", "novelty"],
+  ["배타권", "배타적권리", "exclusive right", "rights conferred"],
   ["관세", "tariff", "duty", "관세율"],
   ["무역법", "trade act", "통상법"],
   ["임시관세", "한시관세", "temporary tariff"],
   ["조사", "investigation", "불공정무역"],
   ["위헌", "위법", "무효", "unconstitutional"],
+  ["한미fta", "korus", "자유무역협정", "fta"],
 ];
 
 /* ---------- 3. 한국어/영문 토크나이저 ---------- */
@@ -816,7 +1017,7 @@ const DOC_NORM = DOC_VEC.map(v => {
 /* ---------- 5. 도메인 추정 ---------- */
 function inferDomain(qTokens) {
   const text = qTokens.join(" ");
-  if (/관세|무역법|tariff|통상|301|ieepa|122조|수출|보복|불공정/.test(text))
+  if (/관세|무역법|tariff|통상|301|ieepa|122조|수출|보복|불공정|fta/.test(text))
     return "통상";
   if (/반도체|semiconductor|semi-conductor|배치설계|layout|integrated|circuit|topography|집적회로/.test(text))
     return "반도체";
@@ -922,9 +1123,9 @@ function buildAnswer(question, hitsList) {
 
   if (top.length === 0 || top[0].score < 0.05) {
     return {
-      text: "내장 지식 베이스(TRIPS 제27·31·35–38·39조, 한미 통상법 IEEPA·122조·301조)에서 " +
-            "관련 근거를 충분히 찾지 못했습니다. 질문을 더 구체적으로 작성하거나 " +
-            "조항 번호를 명시해 주세요.",
+      text: "내장 지식 베이스(TRIPS 협정 조항, 한미 통상법 항목)에서 관련 근거를 " +
+            "충분히 찾지 못했습니다. 질문을 더 구체적으로 작성하거나 조항 번호를 " +
+            "명시해 주세요.",
       cited: [],
     };
   }
@@ -1027,17 +1228,34 @@ function nowTime() {
   return `${ap} ${h}:${m}`;
 }
 
+/* SVG 아이콘 (이모지 대체) */
+const ICONS = {
+  copy: '<path d="M9 9h10v10H9z"/><path d="M5 15V5h10"/>',
+  db: '<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/>',
+  search: '<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.5-4.5"/>',
+  doc: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/>',
+  split: '<circle cx="12" cy="5" r="2.4"/><circle cx="6" cy="19" r="2.4"/><circle cx="18" cy="19" r="2.4"/><path d="M12 7.4v3.1M12 10.5 6.8 16.7M12 10.5l5.2 6.2"/>',
+  merge: '<circle cx="6" cy="5" r="2.4"/><circle cx="18" cy="5" r="2.4"/><circle cx="12" cy="19" r="2.4"/><path d="M6.8 7.1 11.2 17M17.2 7.1 12.8 17"/>',
+  shield: '<path d="M12 3l8 3v5c0 5-3.4 8.6-8 10-4.6-1.4-8-5-8-10V6z"/><path d="M9 12l2 2 4-4.5"/>',
+  arrow: '<path d="M12 5v14M6 13l6 6 6-6"/>',
+};
+function svg(name, stroke) {
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="${stroke}" stroke-width="1.6" ` +
+         `stroke-linecap="round" stroke-linejoin="round">${ICONS[name]}</svg>`;
+}
+
 /* ---------- 12. 탭 내비게이션 ---------- */
-$("nav").addEventListener("click", e => {
-  const a = e.target.closest("a[data-tab]");
-  if (!a) return;
-  const tab = a.dataset.tab;
+function switchTab(tab) {
   document.querySelectorAll("nav.tabs a").forEach(x =>
-    x.classList.toggle("active", x === a));
+    x.classList.toggle("active", x.dataset.tab === tab));
   const target = document.getElementById("tab-" + tab);
   document.querySelectorAll(".tab").forEach(s =>
     s.classList.toggle("active", s === target));
   window.scrollTo(0, 0);
+}
+$("nav").addEventListener("click", e => {
+  const a = e.target.closest("a[data-tab]");
+  if (a) switchTab(a.dataset.tab);
 });
 
 /* ---------- 13. 채팅 ---------- */
@@ -1056,6 +1274,7 @@ function addMsg(role, htmlContent) {
   wrap.appendChild(time);
   chatBody.appendChild(wrap);
   chatBody.scrollTop = chatBody.scrollHeight;
+  return wrap;
 }
 
 function botGreeting() {
@@ -1063,34 +1282,28 @@ function botGreeting() {
     "안녕하세요. WTO TRIPS·한미 통상법 길잡이 <b>TradeGuide v2</b>입니다.\n\n" +
     "다음을 도와드릴 수 있습니다:\n\n" +
     "• <b>법규 검색</b> — 반도체 강제실시권은 언제 허용되나요? / 무역법 301조가 무엇인가요?\n\n" +
-    "• <b>비교 분석</b> — 제31조와 제38조의 보호기간 차이는? (질문을 자동 분해해 검색)\n\n" +
+    "• <b>비교 분석</b> — 제33조와 제38조의 보호기간 차이는? (질문을 자동 분해해 검색)\n\n" +
     "• <b>자체 검증</b> — 답변마다 개념대체·도메인혼동·기간혼동 3유형 오류를 검사해 " +
     "신뢰도(★★★ / ★★)와 출처 점수를 표시합니다.\n\n" +
     "궁금하신 내용을 자유롭게 질문해 주세요.");
 }
 
-function buildBotResponseHtml(question) {
-  const { dec, hitsList, ans, ver } = runPipeline(question);
-  let html = `<div class="ans-text">${escapeHtml(ans.text)}</div>`;
+function renderAnswerHtml(question, answerText, hitsList, dec, ver, mode) {
+  let html = `<div class="badges"><span class="badge mode">` +
+    `${mode === "AI" ? "AI 생성 답변" : "룰 기반 답변"}</span></div>`;
+  html += `<div class="ans-text" style="margin-top:8px">${escapeHtml(answerText)}</div>`;
 
-  // 배지
   html += `<div class="badges">`;
-  if (ver.pass) {
-    html += `<span class="badge ok">검증 통과 — 신뢰도 ★★★</span>`;
-  } else {
-    html += `<span class="badge warn">검증 경고 — 신뢰도 ★★</span>`;
-  }
-  const dom = inferDomain(tokenize(question));
-  html += `<span class="badge dom">추정 도메인: ${escapeHtml(dom)}</span></div>`;
+  html += ver.pass
+    ? `<span class="badge ok">검증 통과 — 신뢰도 ★★★</span>`
+    : `<span class="badge warn">검증 경고 — 신뢰도 ★★</span>`;
+  html += `<span class="badge dom">추정 도메인: ${escapeHtml(inferDomain(tokenize(question)))}</span></div>`;
 
-  // 경고
   if (!ver.pass) {
     html += `<div class="warnbox"><b>자체 검증 경고</b><ul>` +
-      ver.warnings.map(w => `<li>${escapeHtml(w)}</li>`).join("") +
-      `</ul></div>`;
+      ver.warnings.map(w => `<li>${escapeHtml(w)}</li>`).join("") + `</ul></div>`;
   }
 
-  // 출처 Top-3
   const merged = {};
   for (let block of hitsList) {
     for (let h of block.hits) {
@@ -1115,30 +1328,131 @@ function buildBotResponseHtml(question) {
   }
   html += `</details>`;
 
-  // 추론 과정
   html += `<details class="disc decomp-log"><summary>추론 과정 (질문 분해 로그)</summary>`;
   html += `<div style="font-size:12px;margin-top:6px"><b>분해 여부:</b> ` +
     `${dec.decomposed ? "분해됨" : "분해 없음"} (${escapeHtml(dec.reason)})</div><ol>`;
   hitsList.forEach((block, i) => {
     html += `<li><b>하위 질문 ${i + 1}:</b> ${escapeHtml(block.subQ)}<br>`;
-    if (block.hits.length === 0) {
-      html += `검색 결과 없음`;
-    } else {
-      html += block.hits.map(h =>
-        `[${escapeHtml(h.doc.title)}] ${h.score.toFixed(3)}`).join(" · ");
-    }
+    html += block.hits.length === 0 ? "검색 결과 없음"
+      : block.hits.map(h => `[${escapeHtml(h.doc.label)}] ${h.score.toFixed(3)}`).join(" · ");
     html += `</li>`;
   });
   html += `</ol></details>`;
+
+  html += `<button class="copy-btn" type="button">${svg("copy", "currentColor")}답변 복사</button>`;
   return html;
 }
 
-function sendQuestion(q) {
+/* ---- 설정 (사용자 API 키) ---- */
+function loadCfg() {
+  return {
+    key: localStorage.getItem("tgv2_apikey") || "",
+    model: localStorage.getItem("tgv2_model") || "claude-opus-4-7",
+    aiMode: localStorage.getItem("tgv2_aimode") === "1",
+  };
+}
+function updateStatus() {
+  const cfg = loadCfg();
+  $("chatStatus").lastChild.textContent =
+    (cfg.aiMode && cfg.key) ? "AI 생성 모드" : "룰 기반 모드";
+}
+
+/* ---- Claude API 호출 (브라우저 직접 fetch · 사용자 키) ---- */
+async function callClaude(question, docs) {
+  const cfg = loadCfg();
+  const sys =
+    "당신은 WTO TRIPS 협정과 한미 통상법을 다루는 RAG 어시스턴트입니다. " +
+    "아래 [검색된 법규 원문]에 담긴 내용만을 근거로 한국어로 정확하고 간결하게 답하세요. " +
+    "원문에 없는 사실은 추측하지 말고 '제공된 자료에 없습니다'라고 답하세요. " +
+    "답변 마지막 줄에 '근거: <조항명>' 형식으로 출처를 밝히세요.";
+  const ctx = docs.map((d, i) => `(${i + 1}) [${d.title}]\n${d.text}`).join("\n\n");
+  const userMsg = `[검색된 법규 원문]\n${ctx}\n\n[질문]\n${question}`;
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      "x-api-key": cfg.key,
+      "anthropic-version": "2023-06-01",
+      "anthropic-dangerous-direct-browser-access": "true",
+    },
+    body: JSON.stringify({
+      model: cfg.model,
+      max_tokens: 2048,
+      system: [{ type: "text", text: sys, cache_control: { type: "ephemeral" } }],
+      messages: [{ role: "user", content: userMsg }],
+    }),
+  });
+  if (!res.ok) {
+    let detail = "";
+    try { const e = await res.json(); detail = (e.error && e.error.message) || ""; } catch (_) {}
+    const m = {
+      401: "API 키가 유효하지 않습니다. 설정에서 키를 다시 확인하세요.",
+      403: "이 API 키로는 접근 권한이 없습니다.",
+      404: "모델 ID를 찾을 수 없습니다. 설정에서 모델을 다시 선택하세요.",
+      429: "사용량 한도를 초과했습니다. 잠시 후 다시 시도하세요.",
+      529: "API 서버가 혼잡합니다. 잠시 후 다시 시도하세요.",
+    };
+    throw new Error(m[res.status] || `API 오류 (${res.status}) ${detail}`);
+  }
+  const data = await res.json();
+  const block = (data.content || []).find(b => b.type === "text");
+  return block ? block.text.trim() : "(빈 응답)";
+}
+
+async function sendQuestion(q) {
   q = (q || "").trim();
   if (!q) return;
   addMsg("user", escapeHtml(q));
-  setTimeout(() => addMsg("bot", buildBotResponseHtml(q)), 120);
+  const cfg = loadCfg();
+  const { dec, hitsList, ans, ver } = runPipeline(q);
+
+  if (cfg.aiMode && cfg.key && ans.cited.length > 0) {
+    const wrap = addMsg("bot", `<span class="gen">답변을 생성하는 중입니다…</span>`);
+    const bubble = wrap.querySelector(".bubble");
+    try {
+      const aiText = await callClaude(q, ans.cited);
+      const aiVer = validate(q, aiText, ans.cited);
+      bubble.innerHTML = renderAnswerHtml(q, aiText, hitsList, dec, aiVer, "AI");
+    } catch (e) {
+      bubble.innerHTML =
+        `<div class="warnbox"><b>AI 답변 실패</b><br>${escapeHtml(e.message)}` +
+        `<br>설정에서 키·모델을 확인하거나, AI 모드를 끄면 룰 기반 답변을 사용합니다.</div>`;
+    }
+    chatBody.scrollTop = chatBody.scrollHeight;
+  } else {
+    setTimeout(() =>
+      addMsg("bot", renderAnswerHtml(q, ans.text, hitsList, dec, ver, "RULE")), 130);
+  }
 }
+
+/* ---- 설정 모달 ---- */
+function openModal() {
+  const cfg = loadCfg();
+  $("mKey").value = cfg.key;
+  $("mModel").value = cfg.model;
+  $("mAi").checked = cfg.aiMode;
+  $("modalBg").classList.add("show");
+}
+function closeModal() { $("modalBg").classList.remove("show"); }
+$("gearBtn").addEventListener("click", openModal);
+$("modalX").addEventListener("click", closeModal);
+$("modalBg").addEventListener("click", e => {
+  if (e.target === $("modalBg")) closeModal();
+});
+$("mSave").addEventListener("click", () => {
+  localStorage.setItem("tgv2_apikey", $("mKey").value.trim());
+  localStorage.setItem("tgv2_model", $("mModel").value);
+  localStorage.setItem("tgv2_aimode", $("mAi").checked ? "1" : "0");
+  updateStatus();
+  closeModal();
+});
+$("mClear").addEventListener("click", () => {
+  localStorage.removeItem("tgv2_apikey");
+  localStorage.removeItem("tgv2_aimode");
+  $("mKey").value = "";
+  $("mAi").checked = false;
+  updateStatus();
+});
 
 $("sendBtn").addEventListener("click", () => {
   sendQuestion($("chatInput").value);
@@ -1154,6 +1468,17 @@ $("chatInput").addEventListener("keydown", e => {
 $("quick").addEventListener("click", e => {
   const q = e.target.closest(".q");
   if (q) sendQuestion(q.dataset.q);
+});
+/* 답변 복사 (이벤트 위임) */
+chatBody.addEventListener("click", e => {
+  const btn = e.target.closest(".copy-btn");
+  if (!btn) return;
+  const txt = btn.parentElement.querySelector(".ans-text").textContent;
+  const done = () => { btn.lastChild.textContent = "복사됨"; setTimeout(() => {
+    btn.lastChild.textContent = "답변 복사"; }, 1500); };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(txt).then(done, done);
+  } else { done(); }
 });
 
 /* ---------- 14. 관세 시나리오 계산기 ---------- */
@@ -1175,33 +1500,48 @@ $("calcBtn").addEventListener("click", () => {
     ? ((scnLandedW - curLandedW) / curLandedW * 100) : 0;
   const ppDelta = scn - cur;
 
-  let out = `수출 단가 ${usd(price)} · 환율 ${fx.toLocaleString("ko-KR")}원 기준\n\n`;
-  out += `· 현재 관세(${cur}%): 단가당 ${usd(curDutyU)} (${won(curDutyU * fx)})\n`;
-  out += `· 시나리오 관세(${scn}%): 단가당 ${usd(scnDutyU)} (${won(scnDutyU * fx)})\n\n`;
-  out += `· 수입 원가(관세 포함): ${won(curLandedW)} → ${won(scnLandedW)}\n`;
-  out += `<span class="big">추가 관세 부담: ${deltaU >= 0 ? "+" : ""}${usd(deltaU)} ` +
-         `(${deltaU >= 0 ? "+" : ""}${won(deltaU * fx)})</span>`;
-  out += `· 관세율 변화: ${ppDelta >= 0 ? "+" : ""}${ppDelta}%p, ` +
-         `수입 원가 ${pctChange >= 0 ? "+" : ""}${pctChange.toFixed(1)}%\n\n`;
+  let t = `수출 단가 ${usd(price)} · 환율 ${fx.toLocaleString("ko-KR")}원 기준\n\n`;
+  t += `· 현재 관세(${cur}%): 단가당 ${usd(curDutyU)} (${won(curDutyU * fx)})\n`;
+  t += `· 시나리오 관세(${scn}%): 단가당 ${usd(scnDutyU)} (${won(scnDutyU * fx)})\n`;
+  t += `· 관세율 변화: ${ppDelta >= 0 ? "+" : ""}${ppDelta}%p`;
+
+  let concl;
   if (ppDelta > 0) {
-    out += `→ 판매가를 유지할 경우 단가당 영업이익이 약 ${won(deltaU * fx)} 줄어듭니다. ` +
-           `같은 마진을 지키려면 판매가를 약 ${pctChange.toFixed(1)}% 인상해야 합니다.`;
+    concl = `판매가를 유지할 경우 단가당 영업이익이 약 ${won(deltaU * fx)} 줄어듭니다. ` +
+      `같은 마진을 지키려면 판매가를 약 ${pctChange.toFixed(1)}% 인상해야 합니다.`;
   } else if (ppDelta < 0) {
-    out += `→ 관세 인하분만큼 단가당 ${won(-deltaU * fx)}의 원가 여력이 생깁니다.`;
+    concl = `관세 인하분만큼 단가당 ${won(-deltaU * fx)}의 원가 여력이 생깁니다.`;
   } else {
-    out += `→ 관세율 변화가 없어 마진 영향이 없습니다.`;
+    concl = `관세율 변화가 없어 마진 영향이 없습니다.`;
   }
-  const el = $("calcOut");
-  el.innerHTML = out;
-  el.classList.add("show");
+
+  const maxW = Math.max(curLandedW, scnLandedW, 1);
+  const bars =
+    `<div class="cmp-bars">
+      <div class="bar-row">
+        <span class="bl">현재 (${cur}%)</span>
+        <div class="bar-track"><div class="bar" style="width:${(curLandedW / maxW * 100).toFixed(1)}%"></div></div>
+        <span class="bv">${won(curLandedW)}</span>
+      </div>
+      <div class="bar-row">
+        <span class="bl">시나리오 (${scn}%)</span>
+        <div class="bar-track"><div class="bar alt" style="width:${(scnLandedW / maxW * 100).toFixed(1)}%"></div></div>
+        <span class="bv">${won(scnLandedW)}</span>
+      </div>
+     </div>`;
+
+  $("calcOut").innerHTML =
+    `<div class="otext">${escapeHtml(t)}</div>` +
+    `<span class="big">추가 관세 부담: ${deltaU >= 0 ? "+" : ""}${usd(deltaU)} ` +
+    `(${deltaU >= 0 ? "+" : ""}${won(deltaU * fx)})</span>` +
+    `<div style="font-size:11.5px;color:#7c7c7c">단가당 수입 원가(관세 포함) 비교</div>` +
+    bars +
+    `<div class="otext" style="margin-top:11px">→ ${escapeHtml(concl)}</div>`;
+  $("calcOut").classList.add("show");
 });
 
 /* ---------- 15. 지식 베이스 ---------- */
 let kbFilter = "전체";
-
-function catIcon(cat) {
-  return cat === "판례" ? "⚖" : cat === "법률" ? "§" : "◆";
-}
 
 function renderKb() {
   const q = $("kbSearch").value.trim().toLowerCase();
@@ -1221,7 +1561,7 @@ function renderKb() {
     const desc = d.text.replace(/([.!?。])\s+/g, "$1\n").split("\n").slice(0, 2).join(" ");
     card.innerHTML =
       `<div class="kh">
-         <span class="kname">${escapeHtml(catIcon(d.category))} ${escapeHtml(d.label)}</span>
+         <span class="kname">${escapeHtml(d.label)}</span>
          <span class="kcat">${escapeHtml(d.category)}</span>
        </div>
        <div class="kdate">${escapeHtml(d.date)}</div>
@@ -1230,18 +1570,27 @@ function renderKb() {
        <div class="ktags">${d.tags.map(t => `<span>${escapeHtml(t)}</span>`).join("")}</div>
        <div class="kdesc">${escapeHtml(desc)}</div>
        <div class="kfull">${escapeHtml(d.text)}</div>
-       <div class="kmore">▸ 전체 보기</div>`;
-    card.addEventListener("click", () => {
-      card.classList.toggle("open");
-      card.querySelector(".kmore").textContent =
-        card.classList.contains("open") ? "▾ 접기" : "▸ 전체 보기";
+       <div class="kactions">
+         <button class="ka" type="button" data-act="toggle">전체 보기</button>
+         <button class="ka primary" type="button" data-act="ask"
+           data-q="${escapeHtml(d.label + "의 핵심 내용은 무엇인가?")}">이 조항으로 질문하기</button>
+       </div>`;
+    card.querySelectorAll(".ka").forEach(btn => {
+      btn.addEventListener("click", ev => {
+        ev.stopPropagation();
+        if (btn.dataset.act === "toggle") {
+          card.classList.toggle("open");
+          btn.textContent = card.classList.contains("open") ? "접기" : "전체 보기";
+        } else {
+          switchTab("home");
+          sendQuestion(btn.dataset.q);
+        }
+      });
     });
     grid.appendChild(card);
   });
   $("kbCount").textContent = `${shown}개 조항`;
-  if (shown === 0) {
-    grid.innerHTML = `<div class="kb-empty">검색 결과가 없습니다.</div>`;
-  }
+  if (shown === 0) grid.innerHTML = `<div class="kb-empty">검색 결과가 없습니다.</div>`;
 }
 
 $("kbSearch").addEventListener("input", renderKb);
@@ -1254,19 +1603,40 @@ $("kbFilters").addEventListener("click", e => {
   renderKb();
 });
 
-/* ---------- 16. 아키텍처 파이프라인 ---------- */
+/* ---------- 16. AI 구동 원리 카드 ---------- */
+const RAG_CARDS = [
+  ["db", "지식 베이스", "WTO TRIPS 협정 7개 조항 + 한미 통상법 3개 항목을 내부 데이터로 색인."],
+  ["search", "TF-IDF 검색", "한국어 형태소 분리·동의어 확장 후 코사인 유사도로 Top-3 추출, 도메인 가중치 적용."],
+  ["doc", "룰 기반 답변", "검색된 원문을 룰 템플릿으로 종합. LLM 환각 없이 출처에 고정된 답변."],
+];
+const AGENTIC_CARDS = [
+  ["split", "질문 분해", "조항 번호가 여럿이거나 \"비교/차이\"가 포함되면 하위 질문으로 분해해 각각 검색합니다."],
+  ["merge", "다중 검색·통합", "하위 질문마다 별도 Top-3 검색 후 결과를 병합해 통합 답변을 생성합니다."],
+  ["shield", "3유형 자체 검증", "개념 대체·도메인 혼동·기간 혼동 오류를 검사해 신뢰도 ★★★ / ★★를 표시합니다."],
+];
+function renderMiniCards(elId, list) {
+  $(elId).innerHTML = list.map(c =>
+    `<div class="mini">
+       <div class="mi">${svg(c[0], "#b58f4a")}</div>
+       <b>${escapeHtml(c[1])}</b>
+       <p>${escapeHtml(c[2])}</p>
+     </div>`).join("");
+}
+
+/* ---------- 17. 아키텍처 파이프라인 ---------- */
 const PIPELINE = [
-  ["01", "사용자 질문 입력", "예: \"제31조와 제38조의 보호기간 차이는?\""],
+  ["01", "사용자 질문 입력", "예: \"제33조와 제38조의 보호기간 차이는?\""],
   ["02", "질문 분해 (Agentic)", "조항 번호가 여럿이거나 비교 키워드가 있으면 하위 질문으로 분해"],
   ["03", "토큰화 + 동의어 확장", "한국어 조사·어미 단순 분리, 영문 토큰화, 동의어 사전 적용"],
-  ["04", "TF-IDF 벡터화", "질문과 7개 문서를 TF-IDF 벡터로 변환"],
-  ["05", "유사도 검색", "코사인 유사도 계산 + 도메인 일치 가중치(×1.35) → Top-3 추출"],
+  ["04", "TF-IDF 벡터화", "질문과 10개 문서를 TF-IDF 벡터로 변환"],
+  ["05", "유사도 검색", "코사인 유사도 + 도메인 일치 가중치(×1.35) → Top-3 추출"],
   ["06", "룰 기반 답변 생성", "검색된 원문을 룰 템플릿으로 종합 (하위 질문 결과 병합)"],
   ["07", "자체 검증", "개념대체·도메인혼동·기간혼동 3유형 휴리스틱 검사"],
   ["08", "신뢰도 표시", "검증 통과 ★★★ / 경고 ★★ + 출처 점수 노출"],
 ];
-(function renderPipe() {
+function renderPipe() {
   const pipe = $("pipe");
+  pipe.innerHTML = "";
   PIPELINE.forEach((s, i) => {
     const step = document.createElement("div");
     step.className = "step";
@@ -1277,15 +1647,19 @@ const PIPELINE = [
     if (i < PIPELINE.length - 1) {
       const ar = document.createElement("div");
       ar.className = "arrow";
-      ar.textContent = "↓";
+      ar.innerHTML = svg("arrow", "#c9c3b0");
       pipe.appendChild(ar);
     }
   });
-})();
+}
 
-/* ---------- 17. 초기화 ---------- */
+/* ---------- 18. 초기화 ---------- */
 botGreeting();
 renderKb();
+renderMiniCards("howRag", RAG_CARDS);
+renderMiniCards("howAgentic", AGENTIC_CARDS);
+renderPipe();
+updateStatus();
 </script>
 </body>
 </html>
