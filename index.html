@@ -285,6 +285,20 @@
     font-size: 17px; color: var(--navy); font-weight: bold;
     display: block; margin: 8px 0 4px;
   }
+  .calc-group {
+    font-size: 11.5px; font-weight: bold; color: var(--gold);
+    letter-spacing: .3px; margin: 15px 0 9px; padding-bottom: 4px;
+    border-bottom: 1px solid var(--line-2);
+  }
+  .calc-body .calc-group:first-child { margin-top: 0; }
+  .calc-btn2 {
+    width: 100%; margin-top: 9px; display: none;
+    background: #fff; color: var(--navy);
+    border: 1px solid var(--navy); padding: 10px;
+    border-radius: 5px; font-family: inherit; font-size: 13.5px; cursor: pointer;
+  }
+  .calc-btn2.show { display: block; }
+  .calc-btn2:hover { background: #eef0f3; }
   .cmp-bars { margin-top: 12px; }
   .bar-row {
     display: flex; align-items: center; gap: 8px;
@@ -578,14 +592,43 @@
           </div>
           <div>
             <b>관세 시나리오 계산기</b>
-            <small>관세율 변화에 따른 마진 영향 분석</small>
+            <small>관세 영향 분석 · Excel 보고서 출력</small>
           </div>
         </div>
         <div class="calc-body">
+          <div class="calc-group">기업·품목 정보</div>
+          <div class="field">
+            <label for="cCompany">회사명</label>
+            <input type="text" id="cCompany" placeholder="예: (주)한울무역" />
+          </div>
+          <div class="field">
+            <label for="cProduct">품목명</label>
+            <input type="text" id="cProduct" placeholder="예: 차량용 반도체 모듈" />
+          </div>
+          <div class="field">
+            <label for="cHs">HS 코드 (선택)</label>
+            <input type="text" id="cHs" placeholder="예: 8542.31" />
+          </div>
+
+          <div class="calc-group">물량·가격</div>
+          <div class="field">
+            <label for="cQty">수출 물량 (개)</label>
+            <input type="number" id="cQty" value="1000" min="0" />
+          </div>
           <div class="field">
             <label for="cPrice">수출 단가 (USD)</label>
             <input type="number" id="cPrice" value="100" min="0" />
           </div>
+          <div class="field">
+            <label for="cCost">단위당 제조원가 (USD · 선택)</label>
+            <input type="number" id="cCost" value="70" min="0" />
+          </div>
+          <div class="field">
+            <label for="cFreight">단위당 물류비 (USD · 선택)</label>
+            <input type="number" id="cFreight" value="0" min="0" />
+          </div>
+
+          <div class="calc-group">관세·환율</div>
           <div class="field">
             <label for="cCur">현재 관세율 (%)</label>
             <input type="number" id="cCur" value="15" min="0" />
@@ -597,7 +640,12 @@
               <option value="15">15% (122조 임시관세 상한)</option>
               <option value="25" selected>25% (301조 일반)</option>
               <option value="50">50% (301조 고율)</option>
+              <option value="custom">직접 입력</option>
             </select>
+          </div>
+          <div class="field" id="cScnCustomWrap" style="display:none">
+            <label for="cScnCustom">직접 입력 관세율 (%)</label>
+            <input type="number" id="cScnCustom" value="30" min="0" />
           </div>
           <div class="field">
             <label for="cFx">환율 (원/달러)</label>
@@ -605,6 +653,7 @@
           </div>
           <button class="calc-btn" id="calcBtn">마진 변화 계산</button>
           <div class="calc-out" id="calcOut"></div>
+          <button class="calc-btn2" id="reportBtn" type="button">Excel 보고서 다운로드</button>
         </div>
       </div>
 
@@ -1481,63 +1530,178 @@ chatBody.addEventListener("click", e => {
   } else { done(); }
 });
 
-/* ---------- 14. 관세 시나리오 계산기 ---------- */
+/* ---------- 14. 관세 시나리오 계산기 + Excel 보고서 ---------- */
 function won(n) { return "₩" + Math.round(n).toLocaleString("ko-KR"); }
 function usd(n) { return "$" + n.toFixed(2); }
+function intc(n) { return Math.round(n).toLocaleString("ko-KR"); }
+
+let lastReport = null;
+
+function readCalc() {
+  const num = id => parseFloat($(id).value) || 0;
+  const sel = $("cScn").value;
+  return {
+    company: $("cCompany").value.trim(),
+    product: $("cProduct").value.trim(),
+    hs: $("cHs").value.trim(),
+    qty: num("cQty"), price: num("cPrice"), cost: num("cCost"),
+    freight: num("cFreight"), cur: num("cCur"), fx: num("cFx"),
+    scn: sel === "custom" ? num("cScnCustom") : (parseFloat(sel) || 0),
+  };
+}
+
+function computeTariff(v) {
+  const curDutyU = v.price * v.cur / 100;
+  const scnDutyU = v.price * v.scn / 100;
+  const deltaDutyU = scnDutyU - curDutyU;
+  const r = {
+    curDutyU, scnDutyU, deltaDutyU,
+    curLandedU: v.price + v.freight + curDutyU,
+    scnLandedU: v.price + v.freight + scnDutyU,
+    ppDelta: v.scn - v.cur,
+    totalCurDutyKRW: curDutyU * v.qty * v.fx,
+    totalScnDutyKRW: scnDutyU * v.qty * v.fx,
+    totalDeltaKRW: deltaDutyU * v.qty * v.fx,
+    hasMargin: v.cost > 0,
+  };
+  if (r.hasMargin) {
+    r.curMarginU = v.price - v.cost;
+    r.scnMarginU = v.price - v.cost - deltaDutyU;
+    r.curMarginPct = r.curMarginU / v.price * 100;
+    r.scnMarginPct = r.scnMarginU / v.price * 100;
+  }
+  return r;
+}
+
+function calcOpinion(v, r) {
+  let s = `관세율이 ${v.cur}%에서 ${v.scn}%로 ` +
+    `${r.ppDelta >= 0 ? "+" + r.ppDelta : r.ppDelta}%p 변동할 경우, ` +
+    `수출 물량 ${intc(v.qty)}개 기준 총 관세 부담은 ` +
+    (r.totalDeltaKRW >= 0
+      ? `약 ${intc(r.totalDeltaKRW)}원 증가`
+      : `약 ${intc(-r.totalDeltaKRW)}원 감소`) + `한다. `;
+  if (r.hasMargin) {
+    if (r.ppDelta > 0) {
+      s += `관세 인상분을 수출 기업이 흡수해 판매가를 유지한다고 가정하면, ` +
+        `단위 마진율은 ${r.curMarginPct.toFixed(1)}%에서 ${r.scnMarginPct.toFixed(1)}%로 ` +
+        `약 ${(r.curMarginPct - r.scnMarginPct).toFixed(1)}%p 잠식된다. `;
+      s += r.scnMarginU < 0
+        ? `이 경우 단위 마진이 적자로 전환되므로 판매가 인상 또는 원가 절감 대응이 시급하다.`
+        : `동일 마진을 유지하려면 단위당 약 ${usd(r.deltaDutyU)} 상당의 판매가 인상 또는 원가 절감이 필요하다.`;
+    } else if (r.ppDelta < 0) {
+      s += `관세 인하로 단위 마진율은 ${r.curMarginPct.toFixed(1)}%에서 ` +
+        `${r.scnMarginPct.toFixed(1)}%로 개선되어 가격 경쟁력 확보 여력이 생긴다.`;
+    } else {
+      s += `관세율 변동이 없어 마진에 미치는 영향은 없다.`;
+    }
+  }
+  return s;
+}
+
+$("cScn").addEventListener("change", () => {
+  $("cScnCustomWrap").style.display =
+    $("cScn").value === "custom" ? "block" : "none";
+});
 
 $("calcBtn").addEventListener("click", () => {
-  const price = parseFloat($("cPrice").value) || 0;
-  const cur = parseFloat($("cCur").value) || 0;
-  const scn = parseFloat($("cScn").value) || 0;
-  const fx = parseFloat($("cFx").value) || 0;
+  const v = readCalc();
+  const r = computeTariff(v);
 
-  const curDutyU = price * cur / 100;
-  const scnDutyU = price * scn / 100;
-  const deltaU = scnDutyU - curDutyU;
-  const curLandedW = price * (1 + cur / 100) * fx;
-  const scnLandedW = price * (1 + scn / 100) * fx;
-  const pctChange = curLandedW > 0
-    ? ((scnLandedW - curLandedW) / curLandedW * 100) : 0;
-  const ppDelta = scn - cur;
+  let t = `수출 물량 ${intc(v.qty)}개 · 단가 ${usd(v.price)} · 환율 ${intc(v.fx)}원\n\n`;
+  t += `· 단위당 관세: ${usd(r.curDutyU)} → ${usd(r.scnDutyU)} ` +
+       `(${r.deltaDutyU >= 0 ? "+" : ""}${usd(r.deltaDutyU)})\n`;
+  t += `· 단위당 수입원가: ${won(r.curLandedU * v.fx)} → ${won(r.scnLandedU * v.fx)}\n`;
+  t += `· 관세율 변화: ${r.ppDelta >= 0 ? "+" : ""}${r.ppDelta}%p`;
+  t += r.hasMargin
+    ? `\n· 단위 마진율: ${r.curMarginPct.toFixed(1)}% → ${r.scnMarginPct.toFixed(1)}%`
+    : `\n· 제조원가 미입력 — 마진 분석 생략`;
 
-  let t = `수출 단가 ${usd(price)} · 환율 ${fx.toLocaleString("ko-KR")}원 기준\n\n`;
-  t += `· 현재 관세(${cur}%): 단가당 ${usd(curDutyU)} (${won(curDutyU * fx)})\n`;
-  t += `· 시나리오 관세(${scn}%): 단가당 ${usd(scnDutyU)} (${won(scnDutyU * fx)})\n`;
-  t += `· 관세율 변화: ${ppDelta >= 0 ? "+" : ""}${ppDelta}%p`;
-
-  let concl;
-  if (ppDelta > 0) {
-    concl = `판매가를 유지할 경우 단가당 영업이익이 약 ${won(deltaU * fx)} 줄어듭니다. ` +
-      `같은 마진을 지키려면 판매가를 약 ${pctChange.toFixed(1)}% 인상해야 합니다.`;
-  } else if (ppDelta < 0) {
-    concl = `관세 인하분만큼 단가당 ${won(-deltaU * fx)}의 원가 여력이 생깁니다.`;
-  } else {
-    concl = `관세율 변화가 없어 마진 영향이 없습니다.`;
-  }
-
-  const maxW = Math.max(curLandedW, scnLandedW, 1);
-  const bars =
-    `<div class="cmp-bars">
-      <div class="bar-row">
-        <span class="bl">현재 (${cur}%)</span>
-        <div class="bar-track"><div class="bar" style="width:${(curLandedW / maxW * 100).toFixed(1)}%"></div></div>
-        <span class="bv">${won(curLandedW)}</span>
-      </div>
-      <div class="bar-row">
-        <span class="bl">시나리오 (${scn}%)</span>
-        <div class="bar-track"><div class="bar alt" style="width:${(scnLandedW / maxW * 100).toFixed(1)}%"></div></div>
-        <span class="bv">${won(scnLandedW)}</span>
-      </div>
-     </div>`;
+  const maxW = Math.max(r.curLandedU, r.scnLandedU, 1);
+  const bars = `<div class="cmp-bars">
+    <div class="bar-row"><span class="bl">현재 (${v.cur}%)</span>
+      <div class="bar-track"><div class="bar" style="width:${(r.curLandedU / maxW * 100).toFixed(1)}%"></div></div>
+      <span class="bv">${won(r.curLandedU * v.fx)}</span></div>
+    <div class="bar-row"><span class="bl">시나리오 (${v.scn}%)</span>
+      <div class="bar-track"><div class="bar alt" style="width:${(r.scnLandedU / maxW * 100).toFixed(1)}%"></div></div>
+      <span class="bv">${won(r.scnLandedU * v.fx)}</span></div>
+   </div>`;
 
   $("calcOut").innerHTML =
     `<div class="otext">${escapeHtml(t)}</div>` +
-    `<span class="big">추가 관세 부담: ${deltaU >= 0 ? "+" : ""}${usd(deltaU)} ` +
-    `(${deltaU >= 0 ? "+" : ""}${won(deltaU * fx)})</span>` +
-    `<div style="font-size:11.5px;color:#7c7c7c">단가당 수입 원가(관세 포함) 비교</div>` +
+    `<span class="big">총 추가 관세 부담: ${r.totalDeltaKRW >= 0 ? "+" : ""}${won(r.totalDeltaKRW)}</span>` +
+    `<div style="font-size:11.5px;color:#7c7c7c">단위당 수입 원가(관세 포함) 비교</div>` +
     bars +
-    `<div class="otext" style="margin-top:11px">→ ${escapeHtml(concl)}</div>`;
+    `<div class="otext" style="margin-top:11px">→ ${escapeHtml(calcOpinion(v, r))}</div>`;
   $("calcOut").classList.add("show");
+  lastReport = { v, r };
+  $("reportBtn").classList.add("show");
+});
+
+/* ---- Excel 보고서(.xls) 생성·다운로드 ---- */
+function downloadReport(v, r) {
+  const d = new Date();
+  const ds = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-` +
+    `${String(d.getDate()).padStart(2, "0")}`;
+  const company = v.company || "기업명 미입력";
+  const e = escapeHtml;
+  const cell = "border:1px solid #d0ccc0;padding:6px 9px;font-size:13px;";
+  const TH = `style="${cell}background:#152844;color:#ffffff;font-weight:bold;"`;
+  const SEC = `style="${cell}background:#e9e5d8;color:#152844;font-weight:bold;"`;
+  const TD = `style="${cell}"`;
+  const sgn = n => (n >= 0 ? "+" : "");
+  let x = "";
+  x += `<tr><td colspan="4" style="${cell}background:#152844;color:#fff;font-size:16px;font-weight:bold;text-align:center;">관세율 변동 영향 분석 보고서</td></tr>`;
+  x += `<tr><td ${SEC}>작성 기업</td><td colspan="3" ${TD}>${e(company)}</td></tr>`;
+  x += `<tr><td ${SEC}>품목</td><td colspan="3" ${TD}>${e(v.product || "-")}` +
+       `${v.hs ? " (HS " + e(v.hs) + ")" : ""}</td></tr>`;
+  x += `<tr><td ${SEC}>작성일</td><td colspan="3" ${TD}>${ds}</td></tr>`;
+  x += `<tr><td colspan="4" style="${cell}">　</td></tr>`;
+  x += `<tr><td colspan="4" ${SEC}>1. 입력 명세</td></tr>`;
+  const ir = (k, val) => `<tr><td ${TD}>${k}</td><td colspan="3" ${TD}>${val}</td></tr>`;
+  x += ir("수출 물량", intc(v.qty) + " 개");
+  x += ir("수출 단가", usd(v.price));
+  x += ir("단위당 제조원가", v.cost > 0 ? usd(v.cost) : "미입력");
+  x += ir("단위당 물류비", usd(v.freight));
+  x += ir("현재 관세율", v.cur + " %");
+  x += ir("시나리오 관세율", v.scn + " %");
+  x += ir("적용 환율", intc(v.fx) + " 원/달러");
+  x += `<tr><td colspan="4" style="${cell}">　</td></tr>`;
+  x += `<tr><td colspan="4" ${SEC}>2. 분석 결과</td></tr>`;
+  x += `<tr><td ${TH}>구분</td><td ${TH}>현재</td><td ${TH}>시나리오</td><td ${TH}>차이</td></tr>`;
+  const rr = (k, a, b, c) =>
+    `<tr><td ${TD}>${k}</td><td ${TD}>${a}</td><td ${TD}>${b}</td><td ${TD}>${c}</td></tr>`;
+  x += rr("단위당 관세 (USD)", usd(r.curDutyU), usd(r.scnDutyU),
+    sgn(r.deltaDutyU) + usd(r.deltaDutyU));
+  x += rr("단위당 수입원가 (KRW)", won(r.curLandedU * v.fx), won(r.scnLandedU * v.fx),
+    sgn(r.deltaDutyU) + won(r.deltaDutyU * v.fx));
+  x += rr("총 관세 부담 (KRW)", won(r.totalCurDutyKRW), won(r.totalScnDutyKRW),
+    sgn(r.totalDeltaKRW) + won(r.totalDeltaKRW));
+  if (r.hasMargin) {
+    x += rr("단위 마진 (USD)", usd(r.curMarginU), usd(r.scnMarginU),
+      sgn(r.scnMarginU - r.curMarginU) + usd(r.scnMarginU - r.curMarginU));
+    x += rr("마진율", r.curMarginPct.toFixed(1) + "%", r.scnMarginPct.toFixed(1) + "%",
+      sgn(r.scnMarginPct - r.curMarginPct) +
+      (r.scnMarginPct - r.curMarginPct).toFixed(1) + "%p");
+  }
+  x += `<tr><td colspan="4" style="${cell}">　</td></tr>`;
+  x += `<tr><td colspan="4" ${SEC}>3. 분석 의견</td></tr>`;
+  x += `<tr><td colspan="4" ${TD}>${e(calcOpinion(v, r))}</td></tr>`;
+  x += `<tr><td colspan="4" style="${cell}">　</td></tr>`;
+  x += `<tr><td colspan="4" style="${cell}font-size:11px;color:#777;">※ 본 보고서는 단순 산술 모델 기반 추정치이며, 실제 거래에는 부가세·원산지 규정·계약 조건(관세 부담 주체 등)이 추가로 반영됩니다. TradeGuide v2 자동 생성.</td></tr>`;
+  const doc = `<html><head><meta charset="UTF-8"></head><body>` +
+    `<table style="border-collapse:collapse;font-family:'Malgun Gothic',sans-serif;">` +
+    x + `</table></body></html>`;
+  const blob = new Blob(["﻿" + doc], { type: "application/vnd.ms-excel" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `관세영향분석_${company}_${ds}.xls`;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+}
+
+$("reportBtn").addEventListener("click", () => {
+  if (lastReport) downloadReport(lastReport.v, lastReport.r);
 });
 
 /* ---------- 15. 지식 베이스 ---------- */
